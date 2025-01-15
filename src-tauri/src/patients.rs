@@ -4,6 +4,7 @@
 use tauri::State;
 use crate::db::DatabaseState;
 use sqlx::{Row, Column};
+use chrono;
 
 // Endpoint to get all patients data
 #[tauri::command]
@@ -21,13 +22,27 @@ pub async fn get_patients_data(state: State<'_, DatabaseState>) -> Result<Vec<Ve
                 let mut raw_data = Vec::new();
                 let num_cols = row.len();
                 for column in row.columns() {
-                    let value: Option<String> = row.try_get(column.name()).ok();
-                    raw_data.push(value.unwrap_or_else(|| "NULL".to_string()));
+                    let value = match column.type_info().to_string().as_str() {
+                        "INT4" => row.try_get::<Option<i32>, _>(column.ordinal())
+                            .unwrap_or(None)
+                            .map_or("NULL".to_string(), |v| v.to_string()),
+                        "VARCHAR" => row.try_get::<Option<String>, _>(column.ordinal())
+                            .unwrap_or(None)
+                            .map_or("NULL".to_string(), |v| v),
+                        "DATE" => row.try_get::<Option<chrono::NaiveDate>, _>(column.ordinal())
+                            .unwrap_or(None)
+                            .map_or("NULL".to_string(), |v| v.to_string()),
+                        "TIMESTAMPTZ" => row.try_get::<Option<chrono::DateTime<chrono::Utc>>, _>(column.ordinal())
+                            .unwrap_or(None)
+                            .map_or("NULL".to_string(), |v| v.to_string()),
+                        _ => "NULL".to_string()
+                    };
+
+                    raw_data.push(value);
                 }
                 
                 result.push(raw_data);
             }
-            eprintln!("{:#?}", result);
             Ok(result)
         }
         Err(err) => Err(format!("Failed to fetch patients data: {}", err))
