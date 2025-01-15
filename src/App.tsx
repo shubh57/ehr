@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
@@ -11,6 +11,19 @@ function App() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
   }
+  
+  const fetchPatientData = async () => {
+    try {
+      const data = await invoke("get_patients_data");
+      console.log("Patient Data: ", data);
+    } catch (err) {
+      console.error("Error while fetching patient data: ", err);
+    }
+  }
+  
+  useEffect(() => {
+    fetchPatientData();
+  }, [])
 
   return (
     <main className="container">

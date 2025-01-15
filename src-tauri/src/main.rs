@@ -3,6 +3,9 @@
 
 use dotenv::dotenv;
 
+mod patients;
+mod db;
+
 fn main() {
     dotenv().ok();
     ehrportal_lib::run()

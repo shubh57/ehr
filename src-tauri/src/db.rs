@@ -2,8 +2,14 @@
 
 // Dependancies
 use sqlx::{postgres::PgPoolOptions, Executor};
-use std::env;
+use std::{env, sync::Arc};
+use tokio::sync::Mutex;
+use sqlx::postgres::PgPool;
 
+// Struct for storing pool globally in the state
+pub struct DatabaseState {
+    pub pool: Arc<Mutex<PgPool>>,
+}
 
 // Function to connect to postgresql db
 pub async fn connect_to_database() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
