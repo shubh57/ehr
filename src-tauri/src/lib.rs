@@ -46,7 +46,7 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, patients::get_patients_data])
+        .invoke_handler(tauri::generate_handler![greet, patients::get_patients_data, patients::get_appointment_data])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }
