@@ -8,6 +8,8 @@ use chrono;
 use serde::Serialize;
 use chrono::{Utc, NaiveDate, DateTime};
 
+
+// Struct to store result of get_appointment_data
 #[derive(Serialize)]
 pub struct AppointmentData {
     patient_id: i32,
@@ -25,16 +27,6 @@ pub struct AppointmentData {
     doctors_note: Option<String>,
     activity_time: Option<DateTime<Utc>>,
     activity_created_at: Option<DateTime<Utc>>
-}
-
-fn format_data(rows: Vec<PgRow>) -> Vec<Vec<String>> {
-    let mut result = Vec::new();
-
-    for row in rows {
-
-    }
-
-    result
 }
 
 // Endpoint to get all patients data
