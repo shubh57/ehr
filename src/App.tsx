@@ -23,7 +23,7 @@ const App = () => {
                 backgroundColor: theme.palette.background.default,
             }}
         >
-            <AllRoutes/>
+            <AllRoutes />
         </Box>
     );
 };
