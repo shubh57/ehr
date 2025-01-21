@@ -30,6 +30,14 @@ pub async fn setup_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()>
     // Importing dependancy for encryption
     let encryption_query = r#"CREATE EXTENSION IF NOT EXISTS pgcrypto;"#;
     pool.execute(encryption_query).await?;
+
+    // Dropping existing tables which might cause conflict
+    let drop_query = r#"
+        DROP TABLE IF EXISTS patient_activity;
+        DROP TABLE IF EXISTS patients;
+        DROP TABLE IF EXISTS users;
+    "#;
+    pool.execute(drop_query).await?;
     
     // Creating patients table
     let patients_query = r#"
@@ -41,7 +49,6 @@ pub async fn setup_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()>
             last_name VARCHAR(255) NOT NULL,
             date_of_birth DATE NOT NULL,
             gender VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHERS')) NOT NULL,
-            appointment_time TIMESTAMPTZ NOT NULL,
             patient_photo BYTEA, -- Encrypted field for photos
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
@@ -57,6 +64,7 @@ pub async fn setup_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()>
             status VARCHAR(20) CHECK (status IN ('COMPLETED', 'INCOMPLETE', 'TO_BE_REVIEWED')) NOT NULL,
             activity BYTEA NOT NULL, -- Encrypted field for activity
             doctors_note BYTEA, -- Encrypted field for doctor's note
+            patient_complaint BYTEA NOT NULL, -- Encrypted feild for patient's complaint
             activity_time TIMESTAMPTZ NOT NULL,
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
@@ -87,7 +95,7 @@ pub async fn fill_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<
     // Query to fill patients data with dummy values
     let patients_fill_query = r#"
         INSERT INTO patients (
-            mr_number, first_name, last_name, date_of_birth, gender, appointment_time
+            mr_number, first_name, last_name, date_of_birth, gender
         )
         VALUES
         (
@@ -95,25 +103,22 @@ pub async fn fill_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<
             'Alice',
             'Smith',
             '1990-02-15',
-            'FEMALE',
-            '2025-01-14 10:00:00+00'
+            'FEMALE'
         ),
         (
             'MR002',
             'Bob',
             'Johnson',
             '1985-07-10',
-            'MALE',
-            '2025-01-14 11:30:00+00'
+            'MALE'
         );
     "#;
-    eprintln!("{:?}", patients_fill_query);
     pool.execute(patients_fill_query).await?;
     
     // Query to fill patient_activity table with dummy values
     let patient_activity_fill_query = format!(r#"
         INSERT INTO patient_activity (
-            patient_id, status, activity, doctors_note, activity_time
+            patient_id, status, activity, doctors_note, activity_time, patient_complaint
         )
         VALUES
         (
@@ -121,18 +126,27 @@ pub async fn fill_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<
             'COMPLETED',
             pgp_sym_encrypt('Initial check-up completed.', '{}'),
             pgp_sym_encrypt('Patient is advised to monitor blood pressure daily.', '{}'),
-            '2025-01-14 11:45:00+00'
+            '2025-01-20 11:45:00+00',
+            pgp_sym_encrypt('Patient is suffering from hypertension.', '{}')
         ),
         (
             2,
             'TO_BE_REVIEWED',
             pgp_sym_encrypt('Blood test results pending.', '{}'),
             pgp_sym_encrypt('Follow-up required for potential anemia.', '{}'),
-            '2025-01-14 12:00:00+00'
+            '2025-01-20 12:00:00+00',
+            pgp_sym_encrypt('Patient does not stop bleeding when cut.', '{}')
+        ),
+        (
+            2,
+            'INCOMPLETE',
+            pgp_sym_encrypt('Initial check-up incomplete.', '{}'),
+            pgp_sym_encrypt('Patient is advised to monitor blood pressure daily.', '{}'),
+            '2025-01-21 11:45:00+00',
+            pgp_sym_encrypt('Patient is suffering from hypertension.', '{}')
         );
     "#, 
-    encryption_key, encryption_key, encryption_key, encryption_key);
-    eprintln!("{:?}", patient_activity_fill_query);
+    encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key);
     pool.execute(&*patient_activity_fill_query).await?;
     
     // Query to fill users table with dummy data

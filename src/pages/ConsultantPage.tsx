@@ -8,11 +8,10 @@ export type Patient = {
     mr_number: string,
     first_name: string,
     last_name: string,
-    date_of_birth: Date,
+    date_of_birth: string,
     gender: string,
-    appointment_time: Date,
     patient_photo: string,
-    created_at: Date,
+    created_at: string,
 };
 
 const ConsultantPage = () => {
@@ -20,21 +19,7 @@ const ConsultantPage = () => {
 
     const fetchPatientData = async () => {
         try {
-            const data: string[][] = await invoke("get_patients_data");
-
-            const patients: Patient[] = data.map((row) => ({
-                patient_id: parseInt(row[0]),
-                mr_number: row[1],
-                first_name: row[2],
-                last_name: row[3],
-                date_of_birth: new Date(row[4]),
-                gender: row[5],
-                appointment_time: new Date(row[6].replace(" UTC", "+00:00")),
-                patient_photo: row[7],
-                created_at: new Date(row[8].replace(" UTC", "+00:00")),
-            }));
-
-            console.log("patients: ", patients);
+            const patients: Patient[] = await invoke("get_patients_data");
             setPatientData(patients);
         } catch (error) {
             console.error("Error fetching patient data:", error);
@@ -68,15 +53,12 @@ const ConsultantPage = () => {
                                         Gender: {patient.gender}
                                     </Typography>
                                     <Typography>
-                                        DOB: {patient.date_of_birth.toLocaleDateString()}
+                                        DOB: {patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString(): "N/A"}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12} md={6}>
-                                    <Typography>
-                                        Appointment: {patient.appointment_time.toLocaleString()}
-                                    </Typography>
                                     <Typography color="textSecondary">
-                                        Created: {patient.created_at.toLocaleString()}
+                                        Created: {patient.created_at ? new Date(patient.created_at).toLocaleString(): "N/A"}
                                     </Typography>
                                 </Grid>
                             </Grid>
