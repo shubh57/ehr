@@ -13,9 +13,9 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
     <ChakraProvider theme={chakraTheme} resetCSS>
         <ThemeProvider theme={{ [THEME_ID]: muiTheme }}>
-              <BrowserRouter>
-                  <App />
-              </BrowserRouter>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </ThemeProvider>
     </ChakraProvider>,
 );
