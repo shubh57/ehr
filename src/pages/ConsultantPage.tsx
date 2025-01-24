@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, useTheme } from '@mui/material';
 import Appointments from '../components/Appointments';
 import { useNavigate } from 'react-router-dom';
+import PatientList from '../components/PatientList';
 
 export type Patient = {
     patient_id: number;
@@ -18,6 +19,7 @@ export type Patient = {
 const ConsultantPage = () => {
     const [patientData, setPatientData] = useState<Patient[]>([]);
     const navigate = useNavigate();
+    const theme = useTheme();
 
     const fetchPatientData = async () => {
         try {
@@ -33,42 +35,66 @@ const ConsultantPage = () => {
     }, []);
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Appointments />
-            <Typography variant='h4' sx={{ mb: 3 }}>
-                Patient List
-            </Typography>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'top',
+                minHeight: 'calc(100vh)',
+                padding: '24px',
+                backgroundColor: theme.palette.background.default,
+                width: '100%',
+            }}
+        >
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                }}
+            >
+                <Box
+                    sx={{
+                        textAlign: 'center',
+                        flexGrow: 1,
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: '600',
+                            fontSize: '28px',
+                            marginBottom: '10px',
+                        }}
+                    >
+                        Consultant Portal
+                    </Typography>
+                </Box>
+            </Box>
 
-            <Grid container spacing={3}>
-                {patientData.map((patient) => (
-                    <Grid item xs={12} key={patient.patient_id}>
-                        <Paper sx={{ p: 2 }}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} md={6}>
-                                    <Typography
-                                        variant='h6'
-                                        sx={{
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        <div onClick={() => navigate(`/patient_details/${patient.patient_id}`)}>
-                                            {patient.first_name} {patient.last_name}
-                                        </div>
-                                    </Typography>
-                                    <Typography color='textSecondary'>MR#: {patient.mr_number}</Typography>
-                                    <Typography>Gender: {patient.gender}</Typography>
-                                    <Typography>DOB: {patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString() : 'N/A'}</Typography>
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <Typography color='textSecondary'>
-                                        Created: {patient.created_at ? new Date(patient.created_at).toLocaleString() : 'N/A'}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    </Grid>
-                ))}
-            </Grid>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginTop: '2rem'
+                }}
+            >
+                <Appointments />
+            </Box>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginTop: '2rem',
+                    backgroundColor: theme.palette.secondary.main
+                }}
+            >
+                <PatientList />
+            </Box>
         </Box>
     );
 };

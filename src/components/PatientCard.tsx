@@ -82,7 +82,7 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient_id }) => {
                             {patientData?.date_of_birth ? calculateAge(patientData.date_of_birth) : 'Age'}
                         </Typography>
                         <Typography variant='body1' color='textSecondary'>
-                            {patientData?.mr_number || "N/A"}
+                            {patientData?.mr_number || 'N/A'}
                         </Typography>
                     </Box>
                 </>
