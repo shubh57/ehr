@@ -49,6 +49,9 @@ const palette: PaletteOptions = {
     tertiary: {
         main: '#FCD34D', // Yellow
     },
+    success: {
+        main: '#86EFAC',
+    },
     error: {
         main: '#B91C1C', // Red
     },
