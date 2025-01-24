@@ -30,21 +30,21 @@ pub fn run() {
                     Ok(pool) => {
                         eprintln!("Database connected successfully.");
 
-                        match db::setup_tables(&pool).await {
-                            Ok(_) => eprintln!("Tables setup successfully."),
-                            Err(err) => {
-                                eprintln!("Error while setting up tables: {}", err);
-                                std::process::exit(1);
-                            }
-                        }
+                        // match db::setup_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Tables setup successfully."),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up tables: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
 
-                        match db::fill_dummy_data(&pool).await {
-                            Ok(_) => eprintln!("Filled dummy data"),
-                            Err(err) => {
-                                eprintln!("Error while filling dummy data: {}", err);
-                                std::process::exit(1);
-                            }
-                        }
+                        // match db::fill_dummy_data(&pool).await {
+                        //     Ok(_) => eprintln!("Filled dummy data"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while filling dummy data: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
 
                         pool
                     },
@@ -70,7 +70,7 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, patients::get_patients_data, patients::get_appointment_data])
+        .invoke_handler(tauri::generate_handler![greet, patients::get_patient_data, patients::get_patient_activity_data, patients::get_patients_data, patients::get_appointment_data, patients::get_patient_summary_data, patients::get_patient_history_data])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }

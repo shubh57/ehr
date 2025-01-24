@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Box, Typography, Paper, Grid } from '@mui/material';
 import Appointments from '../components/Appointments';
+import { useNavigate } from 'react-router-dom';
 
 export type Patient = {
     patient_id: number;
@@ -16,6 +17,7 @@ export type Patient = {
 
 const ConsultantPage = () => {
     const [patientData, setPatientData] = useState<Patient[]>([]);
+    const navigate = useNavigate();
 
     const fetchPatientData = async () => {
         try {
@@ -43,8 +45,15 @@ const ConsultantPage = () => {
                         <Paper sx={{ p: 2 }}>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={6}>
-                                    <Typography variant='h6'>
-                                        {patient.first_name} {patient.last_name}
+                                    <Typography
+                                        variant='h6'
+                                        sx={{
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <div onClick={() => navigate(`/patient_details/${patient.patient_id}`)}>
+                                            {patient.first_name} {patient.last_name}
+                                        </div>
                                     </Typography>
                                     <Typography color='textSecondary'>MR#: {patient.mr_number}</Typography>
                                     <Typography>Gender: {patient.gender}</Typography>
