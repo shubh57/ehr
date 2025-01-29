@@ -70,7 +70,15 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, patients::get_patient_data, patients::get_patient_activity_data, patients::get_patients_data, patients::get_appointment_data, patients::get_patient_summary_data, patients::get_patient_history_data])
+        .invoke_handler(tauri::generate_handler![
+            greet, 
+            patients::get_patient_data, 
+            patients::get_patient_activity_data, 
+            patients::get_patients_data, 
+            patients::get_appointment_data, 
+            patients::get_patient_summary_data, 
+            patients::get_patient_history_data, 
+            patients::get_patient_doctor_data])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }

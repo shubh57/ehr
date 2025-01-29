@@ -61,6 +61,14 @@ pub struct AppointmentData {
     activity_created_at: Option<DateTime<Utc>>
 }
 
+// Struct to store result of get_patient_doctor_data
+#[derive(Serialize)]
+pub struct PatientDoctorData {
+    doctors_note: Option<String>,
+    patient_complaint: Option<String>,
+    activity_time: Option<DateTime<Utc>>
+}
+
 // Endpoint to get data of specific patient
 #[tauri::command]
 pub async fn get_patient_data(state: tauri::State<'_, DatabaseState>, patient_id: i32) -> Result<PatientData, String> {
@@ -267,5 +275,36 @@ pub async fn get_patient_history_data(state: State<'_, DatabaseState>, patient_i
             }
         }, 
         Err(err) => Err(format!("Error while fetching patient history data: {}", err))
+    }
+}
+
+// Endpoint to get previous doctors notes and patient complaints for a patient
+#[tauri::command]
+pub async fn get_patient_doctor_data(state: State<'_, DatabaseState>, patient_id: i32) -> Result<Vec<PatientDoctorData>, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    match sqlx::query_as!(
+        PatientDoctorData,
+        r#"
+        SELECT 
+            pgp_sym_decrypt(doctors_note::bytea, $1) as doctors_note,
+            pgp_sym_decrypt(patient_complaint::bytea, $1) as patient_complaint,
+            activity_time
+        FROM
+            patient_activity
+        WHERE
+            patient_id = $2
+        "#,
+        &encryption_key,
+        &patient_id
+    )
+    .fetch_all(&*pool)
+    .await {
+        Ok(patient_doctor_data) => Ok(patient_doctor_data),
+        Err(err) => Err(format!("Error while getting patient doctor data: {}", err))
     }
 }

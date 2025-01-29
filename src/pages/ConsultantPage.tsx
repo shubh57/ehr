@@ -78,7 +78,7 @@ const ConsultantPage = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     width: '100%',
-                    marginTop: '2rem'
+                    marginTop: '2rem',
                 }}
             >
                 <Appointments />
@@ -90,7 +90,7 @@ const ConsultantPage = () => {
                     alignItems: 'center',
                     width: '100%',
                     marginTop: '2rem',
-                    backgroundColor: theme.palette.secondary.main
+                    backgroundColor: theme.palette.secondary.main,
                 }}
             >
                 <PatientList />

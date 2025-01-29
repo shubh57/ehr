@@ -16,7 +16,7 @@ import {
     Avatar,
     useTheme,
     Card,
-    CardContent
+    CardContent,
 } from '@mui/material';
 import {
     CalendarToday as CalendarIcon,
@@ -25,7 +25,7 @@ import {
     Note as NoteIcon,
     EventBusy as NoAppointmentsIcon,
     Schedule as TimeIcon,
-    MedicalInformation as MedicalIcon
+    MedicalInformation as MedicalIcon,
 } from '@mui/icons-material';
 
 export type AppointmentData = {
@@ -91,7 +91,7 @@ const Appointments = () => {
                 sx={{
                     display: 'flex',
                     flex: 1,
-                    width: '100%'
+                    width: '100%',
                 }}
             >
                 <Typography
@@ -109,7 +109,7 @@ const Appointments = () => {
             <Box
                 sx={{
                     display: 'flex',
-                    width: '100%'
+                    width: '100%',
                 }}
             >
                 <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, width: '100%' }}>
@@ -117,63 +117,63 @@ const Appointments = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ width: '15%', fontWeight: 'bold' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
                                         <TimeIcon sx={{ color: theme.palette.primary.main }} />
-                                        <Typography variant="subtitle2">
-                                            Appointment Time
-                                        </Typography>
+                                        <Typography variant='subtitle2'>Appointment Time</Typography>
                                     </Box>
                                 </TableCell>
                                 <TableCell sx={{ width: '25%', fontWeight: 'bold' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
                                         <PersonIcon sx={{ color: theme.palette.success.main }} />
-                                        <Typography variant="subtitle2">
-                                            Patient Information
-                                        </Typography>
+                                        <Typography variant='subtitle2'>Patient Information</Typography>
                                     </Box>
                                 </TableCell>
                                 <TableCell sx={{ width: '25%', fontWeight: 'bold' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
                                         <MedicalIcon sx={{ color: theme.palette.info.main }} />
-                                        <Typography variant="subtitle2">
-                                            Reason for Visit
-                                        </Typography>
+                                        <Typography variant='subtitle2'>Reason for Visit</Typography>
                                     </Box>
                                 </TableCell>
                                 <TableCell sx={{ width: '20%', fontWeight: 'bold' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
                                         <AssignmentIcon sx={{ color: theme.palette.warning.main }} />
-                                        <Typography variant="subtitle2">
-                                            Activity
-                                        </Typography>
+                                        <Typography variant='subtitle2'>Activity</Typography>
                                     </Box>
                                 </TableCell>
                                 <TableCell sx={{ width: '15%', fontWeight: 'bold' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
                                         <NoteIcon sx={{ color: theme.palette.secondary.main }} />
-                                        <Typography variant="subtitle2">
-                                            Doctor's Note
-                                        </Typography>
+                                        <Typography variant='subtitle2'>Doctor's Note</Typography>
                                     </Box>
                                 </TableCell>
                             </TableRow>
@@ -182,12 +182,12 @@ const Appointments = () => {
                             {appointmentData.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5}>
-                                        <Card 
+                                        <Card
                                             elevation={0}
-                                            sx={{ 
+                                            sx={{
                                                 backgroundColor: 'transparent',
                                                 width: '100%',
-                                                minHeight: '300px'
+                                                minHeight: '300px',
                                             }}
                                         >
                                             <CardContent>
@@ -201,29 +201,25 @@ const Appointments = () => {
                                                         gap: '1.5rem',
                                                     }}
                                                 >
-                                                    <NoAppointmentsIcon 
-                                                        sx={{ 
+                                                    <NoAppointmentsIcon
+                                                        sx={{
                                                             fontSize: '4rem',
                                                             color: theme.palette.text.secondary,
-                                                            opacity: 0.8
+                                                            opacity: 0.8,
                                                         }}
                                                     />
                                                     <Box sx={{ textAlign: 'center' }}>
-                                                        <Typography 
-                                                            variant="h5" 
-                                                            color="text.secondary"
-                                                            sx={{ 
+                                                        <Typography
+                                                            variant='h5'
+                                                            color='text.secondary'
+                                                            sx={{
                                                                 fontWeight: 600,
-                                                                mb: 1
+                                                                mb: 1,
                                                             }}
                                                         >
                                                             No Appointments Today
                                                         </Typography>
-                                                        <Typography 
-                                                            variant="body1" 
-                                                            color="text.secondary"
-                                                            sx={{ opacity: 0.8 }}
-                                                        >
+                                                        <Typography variant='body1' color='text.secondary' sx={{ opacity: 0.8 }}>
                                                             There are no scheduled appointments for today
                                                         </Typography>
                                                     </Box>
