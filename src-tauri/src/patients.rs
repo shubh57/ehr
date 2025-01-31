@@ -5,7 +5,7 @@ use std::fmt::format;
 // Dependencies
 use tauri::State;
 use crate::db::DatabaseState;
-use sqlx::{pool, postgres::PgRow, Column, Row};
+use sqlx::{pool, postgres::PgRow, Column, Executor, Row};
 use chrono;
 use serde::Serialize;
 use chrono::{Utc, NaiveDate, DateTime};
@@ -440,5 +440,59 @@ pub async fn add_comment_to_procedure(state: State<'_, DatabaseState>, activity_
     .await {
         Ok(_) => Ok(format!("Successfully added comment to activity")),
         Err(err) => Err(format!("Error while adding comment to procedure: {}", err))
+    }
+}
+
+// Endpoint to create new patient activity
+#[tauri::command]
+pub async fn create_patient_activity(state: State<'_, DatabaseState>, patient_id: i32, procedure_id: i32, status: String, doctors_note: String, patient_complaint: String, activity_time: String) -> Result<String, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    eprintln!("activity_time: {}", activity_time);
+
+    // Convert activity_time from String to DateTime<Utc>
+    let activity_time = match activity_time.parse::<DateTime<Utc>>() {
+        Ok(dt) => dt,
+        Err(_) => return Err("Invalid datetime format".to_string()),
+    };
+
+    eprintln!("create_patient_activity");
+        match sqlx::query!(
+            r#"
+        INSERT INTO patient_activity (
+            patient_id, 
+            procedure_id, 
+            status, 
+            doctors_note, 
+            patient_complaint, 
+            activity_time, 
+            created_at
+        ) VALUES (
+            $1, 
+            $2, 
+            $3, 
+            pgp_sym_encrypt($4, $7), 
+            pgp_sym_encrypt($5, $7), 
+            $6, 
+            NOW()
+        ) 
+        RETURNING activity_id
+        "#,
+        patient_id,
+        procedure_id,
+        status,
+        doctors_note,
+        patient_complaint,
+        activity_time,
+        encryption_key
+    )
+    .fetch_one(&*pool)
+    .await {
+        Ok(record) => Ok(format!("Successfully created patient activity: {}", record.activity_id)),
+        Err(err) => Err(format!("Error while creating patient activity: {}", err))
     }
 }

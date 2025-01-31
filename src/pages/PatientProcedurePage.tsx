@@ -1,10 +1,10 @@
 // src/components/PatientProcedurePage.tsx
 
-import { ArrowBack } from "@mui/icons-material";
-import { Box, Typography, useTheme } from "@mui/material";
-import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import PatientProcedureGrid from "../components/PatientProcedureGrid";
+import { ArrowBack } from '@mui/icons-material';
+import { Box, Typography, useTheme } from '@mui/material';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import PatientProcedureGrid from '../components/PatientProcedureGrid';
 
 const PatientProcedurePage: React.FC = () => {
     const theme = useTheme();
@@ -39,7 +39,7 @@ const PatientProcedurePage: React.FC = () => {
                         cursor: 'pointer',
                     }}
                 >
-                    <ArrowBack onClick={() => navigate('/')} />
+                    <ArrowBack onClick={() => navigate(`/patient_details/${patientId}`)} />
                 </Box>
                 <Box
                     sx={{

@@ -89,7 +89,8 @@ pub fn run() {
             patients::get_patient_doctor_data,
             patients::get_patient_procedures,
             patients::add_comment_to_procedure,
-            patients::get_all_procedures])
+            patients::get_all_procedures,
+            patients::create_patient_activity])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }

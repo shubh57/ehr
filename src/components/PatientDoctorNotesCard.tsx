@@ -48,7 +48,6 @@ const PatientDoctorNotesCard: React.FC<PatientDoctorNotesCardProps> = ({ patient
                 gap: '1rem',
             }}
         >
-
             <Box
                 sx={{
                     dislay: 'flex',
@@ -61,38 +60,36 @@ const PatientDoctorNotesCard: React.FC<PatientDoctorNotesCardProps> = ({ patient
                 }}
             >
                 <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
-                }}
-            >
-                <Typography variant='h6' fontWeight='bold'>
-                    Doctor's Notes
-                </Typography>
-                <Box
-                    onClick={() => setShowNotes(!showNotes)}
                     sx={{
                         display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        gap: 1,
-                        cursor: 'pointer',
-                        color: 'text.secondary',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        },
+                        mb: 2,
                     }}
                 >
-                    {showNotes ? <LockOpen fontSize="small" /> : <Lock fontSize="small" />}
-                    <Typography variant="caption">
-                        {showNotes ? 'Hide Notes' : 'Show Notes'}
+                    <Typography variant='h6' fontWeight='bold'>
+                        Doctor's Notes
                     </Typography>
+                    <Box
+                        onClick={() => setShowNotes(!showNotes)}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            cursor: 'pointer',
+                            color: 'text.secondary',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                        }}
+                    >
+                        {showNotes ? <LockOpen fontSize='small' /> : <Lock fontSize='small' />}
+                        <Typography variant='caption'>{showNotes ? 'Hide Notes' : 'Show Notes'}</Typography>
+                    </Box>
                 </Box>
-            </Box>
 
                 {isLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', padding: '1rem' }}>
@@ -168,7 +165,7 @@ const PatientDoctorNotesCard: React.FC<PatientDoctorNotesCardProps> = ({ patient
                                             year: 'numeric',
                                             hour: 'numeric',
                                             minute: '2-digit',
-                                            hour12: true
+                                            hour12: true,
                                         })}
                                     </Typography>
                                 </Box>
