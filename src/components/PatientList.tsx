@@ -1,18 +1,23 @@
 // src/components/PatientList.tsx
 
-import { 
-    Box, Typography, Avatar, useTheme, CircularProgress,
-    List, ListItem, ListItemAvatar, ListItemText, Divider,
-    Card, CardContent, Chip
+import {
+    Box,
+    Typography,
+    Avatar,
+    useTheme,
+    CircularProgress,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Divider,
+    Card,
+    CardContent,
+    Chip,
 } from '@mui/material';
-import { 
-    Person as PersonIcon,
-    EventNote as DateIcon,
-    Assignment as MRIcon,
-    Wc as GenderIcon
-} from '@mui/icons-material';
-import React, { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { Person as PersonIcon, EventNote as DateIcon, Assignment as MRIcon, Wc as GenderIcon } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 
 export type Patient = {
@@ -46,7 +51,9 @@ const PatientList: React.FC = () => {
     const fetchPatientData = async () => {
         try {
             setIsLoading(true);
+            console.log('Fetching data...');
             const patients: Patient[] = await invoke('get_patients_data');
+            console.log('patients: ', patients);
             setPatientData(patients);
         } catch (error) {
             console.error('Error fetching patient data:', error);
@@ -63,14 +70,14 @@ const PatientList: React.FC = () => {
     const genderColors = {
         male: {
             light: '#e3f2fd', // Light blue background
-            main: '#2196f3',  // Modern blue
-            text: '#1976d2'   // Darker blue for text
+            main: '#2196f3', // Modern blue
+            text: '#1976d2', // Darker blue for text
         },
         female: {
             light: '#fce4ec', // Light pink background
-            main: '#ec407a',  // Modern pink
-            text: '#d81b60'   // Darker pink for text
-        }
+            main: '#ec407a', // Modern pink
+            text: '#d81b60', // Darker pink for text
+        },
     };
 
     return (
@@ -86,15 +93,15 @@ const PatientList: React.FC = () => {
         >
             <Box
                 sx={{
-                    p: 3,  // Increased padding
+                    p: 3, // Increased padding
                     borderBottom: `1px solid ${theme.palette.divider}`,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 2,  // Increased gap
+                    gap: 2, // Increased gap
                 }}
             >
-                <PersonIcon color="primary" sx={{ fontSize: '1.5rem' }} />
-                <Typography variant="h6" fontWeight="bold">
+                <PersonIcon color='primary' sx={{ fontSize: '1.5rem' }} />
+                <Typography variant='h6' fontWeight='bold'>
                     Patient List
                 </Typography>
             </Box>
@@ -110,12 +117,12 @@ const PatientList: React.FC = () => {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        p: 6,  // Increased padding
+                        p: 6, // Increased padding
                         gap: 2,
                     }}
                 >
                     <PersonIcon sx={{ fontSize: '3rem', color: 'text.secondary' }} />
-                    <Typography variant="h6" color="text.secondary">
+                    <Typography variant='h6' color='text.secondary'>
                         No patients found
                     </Typography>
                 </Box>
@@ -123,10 +130,10 @@ const PatientList: React.FC = () => {
                 <List sx={{ width: '100%', p: 0 }}>
                     {patientData.map((patient, index) => (
                         <React.Fragment key={patient.patient_id}>
-                            <ListItem 
-                                sx={{ 
-                                    py: 2.5,  // Vertical padding
-                                    px: 3,    // Horizontal padding
+                            <ListItem
+                                sx={{
+                                    py: 2.5, // Vertical padding
+                                    px: 3, // Horizontal padding
                                     '&:hover': {
                                         backgroundColor: theme.palette.action.hover,
                                     },
@@ -136,9 +143,7 @@ const PatientList: React.FC = () => {
                                     <ListItemAvatar>
                                         <Avatar
                                             sx={{
-                                                bgcolor: patient.gender === 'MALE' ? 
-                                                    genderColors.male.main : 
-                                                    genderColors.female.main,
+                                                bgcolor: patient.gender === 'MALE' ? genderColors.male.main : genderColors.female.main,
                                                 width: theme.spacing(10),
                                                 height: theme.spacing(10),
                                             }}
@@ -149,23 +154,17 @@ const PatientList: React.FC = () => {
                                     </ListItemAvatar>
                                 </Box>
                                 <Box sx={{ ml: 3, flex: 1 }}>
-                                    <Box 
+                                    <Box
                                         sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5, cursor: 'pointer' }}
                                         onClick={() => navigate(`/patient_details/${patient.patient_id}`)}
                                     >
-                                        <Typography variant="h6">
-                                            {`${patient.first_name} ${patient.last_name}`}
-                                        </Typography>
+                                        <Typography variant='h6'>{`${patient.first_name} ${patient.last_name}`}</Typography>
                                         <Chip
-                                            size="small"
+                                            size='small'
                                             label={patient.gender}
                                             sx={{
-                                                backgroundColor: patient.gender === 'MALE' ? 
-                                                    genderColors.male.light : 
-                                                    genderColors.female.light,
-                                                color: patient.gender === 'MALE' ? 
-                                                    genderColors.male.text : 
-                                                    genderColors.female.text,
+                                                backgroundColor: patient.gender === 'MALE' ? genderColors.male.light : genderColors.female.light,
+                                                color: patient.gender === 'MALE' ? genderColors.male.text : genderColors.female.text,
                                                 fontWeight: 500,
                                                 px: 1,
                                             }}
@@ -173,20 +172,14 @@ const PatientList: React.FC = () => {
                                     </Box>
                                     <Box sx={{ display: 'flex', gap: 4 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <MRIcon 
-                                                fontSize="small" 
-                                                sx={{ color: theme.palette.text.secondary }} 
-                                            />
-                                            <Typography variant="body2" color="text.secondary">
+                                            <MRIcon fontSize='small' sx={{ color: theme.palette.text.secondary }} />
+                                            <Typography variant='body2' color='text.secondary'>
                                                 {patient.mr_number}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <DateIcon 
-                                                fontSize="small" 
-                                                sx={{ color: theme.palette.text.secondary }} 
-                                            />
-                                            <Typography variant="body2" color="text.secondary">
+                                            <DateIcon fontSize='small' sx={{ color: theme.palette.text.secondary }} />
+                                            <Typography variant='body2' color='text.secondary'>
                                                 {`${calculateAge(patient.date_of_birth)} years`}
                                             </Typography>
                                         </Box>
@@ -194,7 +187,7 @@ const PatientList: React.FC = () => {
                                 </Box>
                             </ListItem>
                             {index < patientData.length - 1 && (
-                                <Divider sx={{ mx: 3 }} />  // Added margin to divider
+                                <Divider sx={{ mx: 3 }} /> // Added margin to divider
                             )}
                         </React.Fragment>
                     ))}

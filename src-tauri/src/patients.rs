@@ -1,9 +1,11 @@
 // src-tauri/src/patients.rs
 
+use std::fmt::format;
+
 // Dependencies
 use tauri::State;
 use crate::db::DatabaseState;
-use sqlx::{postgres::PgRow, Column, Row};
+use sqlx::{pool, postgres::PgRow, Column, Executor, Row};
 use chrono;
 use serde::Serialize;
 use chrono::{Utc, NaiveDate, DateTime};
@@ -50,7 +52,7 @@ pub struct AppointmentData {
     last_name: String,
     date_of_birth: NaiveDate,
     gender: String,
-    patient_photo: Option<Vec<u8>>,
+    patient_photo: Option<String>,
     created_at: Option<DateTime<Utc>>,
     activity_id: Option<i32>,
     status: Option<String>,
@@ -59,6 +61,36 @@ pub struct AppointmentData {
     patient_complaint: Option<String>,
     activity_time: Option<DateTime<Utc>>,
     activity_created_at: Option<DateTime<Utc>>
+}
+
+// Struct to store result of get_patient_doctor_data
+#[derive(Serialize)]
+pub struct PatientDoctorData {
+    doctors_note: Option<String>,
+    patient_complaint: Option<String>,
+    activity_time: Option<DateTime<Utc>>
+}
+
+// Struct to store result of get_all_procedures
+#[derive(Serialize)]
+pub struct Procedure {
+    procedure_id: i32,
+    procedure_name: Option<String>,
+    description: Option<String>,
+    created_at: Option<DateTime<Utc>>
+}
+
+// Struct to store result of get_patient_procedures
+#[derive(Serialize)]
+pub struct PatientProcedureData {
+    activity_id: i32,
+    status: String,
+    procedure_name: Option<String>,
+    procedure_description: Option<String>,
+    doctors_note: Option<String>,
+    patient_complaint: Option<String>,
+    comments: Option<String>,
+    activity_time: Option<DateTime<Utc>>
 }
 
 // Endpoint to get data of specific patient
@@ -151,12 +183,16 @@ pub async fn get_patient_activity_data(state: tauri::State<'_, DatabaseState>, p
         PatientActivityData,
         r#"
         SELECT 
-            activity_id,
-            pgp_sym_decrypt(activity::bytea, $1) as activity,
-            activity_time,
-            status
+            pa.activity_id,
+            pgp_sym_decrypt(p.procedure_name::bytea, $1) as activity,
+            pa.activity_time,
+            pa.status
         FROM
-            patient_activity
+            patient_activity pa
+        LEFT JOIN
+            procedures p
+        ON
+            pa.procedure_id = p.procedure_id
         WHERE
             patient_id = $2
         ORDER BY
@@ -172,7 +208,7 @@ pub async fn get_patient_activity_data(state: tauri::State<'_, DatabaseState>, p
     }
 }
 
-// Endpoint to get appointment data
+// Endpoint to get today's appointment data
 #[tauri::command]
 pub async fn get_appointment_data(state: State<'_, DatabaseState>) -> Result<Vec<AppointmentData>, String> {
     let pool = state.pool.lock().await;
@@ -191,17 +227,18 @@ pub async fn get_appointment_data(state: State<'_, DatabaseState>) -> Result<Vec
             p.last_name,
             p.date_of_birth,
             p.gender,
-            p.patient_photo,
+            pgp_sym_decrypt(p.patient_photo::bytea, $1) as patient_photo,
             p.created_at,
             pa.activity_id,
             pa.status,
-            pgp_sym_decrypt(pa.activity::bytea, $1) as activity,
+            pgp_sym_decrypt(pr.procedure_name::bytea, $1) as activity,
             pgp_sym_decrypt(pa.doctors_note::bytea, $1) as doctors_note,
             pgp_sym_decrypt(pa.patient_complaint::bytea, $1) as patient_complaint,
             pa.activity_time,
             pa.created_at as activity_created_at
         FROM patient_activity pa
         LEFT JOIN patients p ON p.patient_id = pa.patient_id
+        LEFT JOIN procedures pr ON pr.procedure_id = pa.procedure_id
         WHERE DATE(pa.activity_time) = CURRENT_DATE
         ORDER BY pa.activity_time ASC
         "#,
@@ -267,5 +304,195 @@ pub async fn get_patient_history_data(state: State<'_, DatabaseState>, patient_i
             }
         }, 
         Err(err) => Err(format!("Error while fetching patient history data: {}", err))
+    }
+}
+
+// Endpoint to get previous doctors notes and patient complaints for a patient
+#[tauri::command]
+pub async fn get_patient_doctor_data(state: State<'_, DatabaseState>, patient_id: i32) -> Result<Vec<PatientDoctorData>, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    match sqlx::query_as!(
+        PatientDoctorData,
+        r#"
+        SELECT 
+            pgp_sym_decrypt(doctors_note::bytea, $1) as doctors_note,
+            pgp_sym_decrypt(patient_complaint::bytea, $1) as patient_complaint,
+            activity_time
+        FROM
+            patient_activity
+        WHERE
+            patient_id = $2
+        "#,
+        &encryption_key,
+        &patient_id
+    )
+    .fetch_all(&*pool)
+    .await {
+        Ok(patient_doctor_data) => Ok(patient_doctor_data),
+        Err(err) => Err(format!("Error while getting patient doctor data: {}", err))
+    }
+}
+
+// Endpoint to get all procedures
+#[tauri::command]
+pub async fn get_all_procedures(state: State<'_, DatabaseState>) -> Result<Vec<Procedure>, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    match sqlx::query_as!(
+        Procedure,
+        r#"
+        SELECT
+            procedure_id,
+            pgp_sym_decrypt(procedure_name::bytea, $1) as procedure_name,
+            pgp_sym_decrypt(description::bytea, $1) as description,
+            created_at
+        FROM
+            procedures
+        "#,
+        &encryption_key
+    )
+    .fetch_all(&*pool)
+    .await {
+        Ok(procedures) => Ok(procedures),
+        Err(err) => Err(format!("Error while fetching procedures: {}", err))
+    }
+}
+
+// Endpoint to get procedures data for a patient
+#[tauri::command]
+pub async fn get_patient_procedures(state: State<'_, DatabaseState>, patient_id: i32) -> Result<Vec<PatientProcedureData>, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    match sqlx::query_as!(
+        PatientProcedureData,
+        r#"
+        SELECT
+            pa.activity_id,
+            pa.status,
+            pgp_sym_decrypt(pr.procedure_name::bytea, $1) as procedure_name,
+            pgp_sym_decrypt(pr.description::bytea, $1) as procedure_description,
+            pgp_sym_decrypt(pa.doctors_note::bytea, $1) as doctors_note,
+            pgp_sym_decrypt(pa.patient_complaint::bytea, $1) as patient_complaint,
+            pgp_sym_decrypt(pa.comments::bytea, $1) as comments,
+            pa.activity_time
+        FROM
+            patient_activity pa
+        LEFT JOIN
+            procedures pr
+        ON
+            pa.procedure_id = pr.procedure_id
+        WHERE
+            pa.patient_id = $2
+        ORDER BY
+            pa.activity_time DESC
+        "#,
+        &encryption_key,
+        &patient_id
+    )
+    .fetch_all(&*pool)
+    .await {
+        Ok(patient_procedure_data) => Ok(patient_procedure_data),
+        Err(err) => Err(format!("Error while fetching patient procedure data: {}", err))
+    }
+}
+
+// Endpoint to add comments to a particular activity
+#[tauri::command]
+pub async fn add_comment_to_procedure(state: State<'_, DatabaseState>, activity_id: i32, comment: String) -> Result<String, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    // Encrypt the new comment
+    let encrypted_comment = format!("pgp_sym_encrypt('{}', '{}')", comment, encryption_key);
+
+    // Update the comments field by decrypting, appending, and re-encrypting
+    match sqlx::query!(
+        r#"
+        UPDATE patient_activity
+        SET comments = pgp_sym_encrypt(
+            COALESCE(pgp_sym_decrypt(comments::bytea, $1), '') || '\n' || $2,
+            $1
+        )
+        WHERE activity_id = $3
+        RETURNING *;
+        "#,
+        &encryption_key, 
+        comment,        
+        activity_id     
+    )
+    .fetch_one(&*pool)
+    .await {
+        Ok(_) => Ok(format!("Successfully added comment to activity")),
+        Err(err) => Err(format!("Error while adding comment to procedure: {}", err))
+    }
+}
+
+// Endpoint to create new patient activity
+#[tauri::command]
+pub async fn create_patient_activity(state: State<'_, DatabaseState>, patient_id: i32, procedure_id: i32, status: String, doctors_note: String, patient_complaint: String, activity_time: String) -> Result<String, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    eprintln!("activity_time: {}", activity_time);
+
+    // Convert activity_time from String to DateTime<Utc>
+    let activity_time = match activity_time.parse::<DateTime<Utc>>() {
+        Ok(dt) => dt,
+        Err(_) => return Err("Invalid datetime format".to_string()),
+    };
+
+    eprintln!("create_patient_activity");
+        match sqlx::query!(
+            r#"
+        INSERT INTO patient_activity (
+            patient_id, 
+            procedure_id, 
+            status, 
+            doctors_note, 
+            patient_complaint, 
+            activity_time, 
+            created_at
+        ) VALUES (
+            $1, 
+            $2, 
+            $3, 
+            pgp_sym_encrypt($4, $7), 
+            pgp_sym_encrypt($5, $7), 
+            $6, 
+            NOW()
+        ) 
+        RETURNING activity_id
+        "#,
+        patient_id,
+        procedure_id,
+        status,
+        doctors_note,
+        patient_complaint,
+        activity_time,
+        encryption_key
+    )
+    .fetch_one(&*pool)
+    .await {
+        Ok(record) => Ok(format!("Successfully created patient activity: {}", record.activity_id)),
+        Err(err) => Err(format!("Error while creating patient activity: {}", err))
     }
 }

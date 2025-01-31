@@ -8,6 +8,8 @@ import PatientActivityCard from '../components/PatientActivityCard';
 import { ArrowBack } from '@mui/icons-material';
 import PatientSummaryCard from '../components/PatientSummaryCard';
 import PatientHistoryCard from '../components/PatientHistoryCard';
+import PatientDoctorNotesCard from '../components/PatientDoctorNotesCard';
+import PatientProcedureGrid from '../components/PatientProcedureGrid';
 
 const PatientDetails = () => {
     const { patient_id } = useParams();
@@ -113,18 +115,23 @@ const PatientDetails = () => {
                                 >
                                     <PatientHistoryCard patient_id={patientId} />
                                 </Box>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                    }}
+                                >
+                                    <PatientActivityCard patient_id={patientId} />
+                                </Box>
                             </Box>
                             <Box
                                 sx={{
                                     display: 'flex',
                                     width: '40%',
-                                    backgroundColor: theme.palette.secondary.main,
                                     borderRadius: '8px',
                                 }}
-                            ></Box>
-                        </Box>
-                        <Box>
-                            <PatientActivityCard patient_id={patientId} />
+                            >
+                                <PatientDoctorNotesCard patient_id={patientId} />
+                            </Box>
                         </Box>
                     </Box>
                 </Box>

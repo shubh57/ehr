@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Chip, useTheme } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
+import { useNavigate } from 'react-router-dom';
 
 export type PatientActivity = {
     activity_id: number;
@@ -17,6 +18,7 @@ interface PatientActivityCardProps {
 
 const PatientActivityCard: React.FC<PatientActivityCardProps> = ({ patient_id }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const [patientActivityData, setPatientActivityData] = useState<PatientActivity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
@@ -145,7 +147,7 @@ const PatientActivityCard: React.FC<PatientActivityCardProps> = ({ patient_id })
             {patientActivityData.length > 0 && (
                 <Button
                     variant='contained'
-                    onClick={() => setShowAll(!showAll)}
+                    onClick={() => navigate(`/patient_procedure/${patient_id}`)}
                     sx={{ alignSelf: 'flex-start', marginTop: '8px', backgroundColor: theme.palette.common.black, color: theme.palette.common.white }}
                 >
                     {showAll ? 'View Less' : 'View All'}
