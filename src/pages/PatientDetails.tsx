@@ -9,6 +9,7 @@ import { ArrowBack } from '@mui/icons-material';
 import PatientSummaryCard from '../components/PatientSummaryCard';
 import PatientHistoryCard from '../components/PatientHistoryCard';
 import PatientDoctorNotesCard from '../components/PatientDoctorNotesCard';
+import PatientProcedureGrid from '../components/PatientProcedureGrid';
 
 const PatientDetails = () => {
     const { patient_id } = useParams();

@@ -46,6 +46,14 @@ pub fn run() {
                         //     }
                         // }
 
+                        match db::setup_complete_database(&pool, true).await {
+                            Ok(_) => eprintln!("Setup database successfully."),
+                            Err(err) => {
+                                eprintln!("Error while setting up database: {}", err);
+                                std::process::exit(1);
+                            }
+                        }
+
                         pool
                     },
                     Err(err) => {
@@ -78,7 +86,10 @@ pub fn run() {
             patients::get_appointment_data, 
             patients::get_patient_summary_data, 
             patients::get_patient_history_data, 
-            patients::get_patient_doctor_data])
+            patients::get_patient_doctor_data,
+            patients::get_patient_procedures,
+            patients::add_comment_to_procedure,
+            patients::get_all_procedures])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }

@@ -51,7 +51,9 @@ const PatientList: React.FC = () => {
     const fetchPatientData = async () => {
         try {
             setIsLoading(true);
+            console.log("Fetching data...");
             const patients: Patient[] = await invoke('get_patients_data');
+            console.log("patients: ", patients);
             setPatientData(patients);
         } catch (error) {
             console.error('Error fetching patient data:', error);
