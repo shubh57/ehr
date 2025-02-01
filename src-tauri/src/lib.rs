@@ -46,13 +46,13 @@ pub fn run() {
                         //     }
                         // }
 
-                        match db::setup_complete_database(&pool, true).await {
-                            Ok(_) => eprintln!("Setup database successfully."),
-                            Err(err) => {
-                                eprintln!("Error while setting up database: {}", err);
-                                std::process::exit(1);
-                            }
-                        }
+                        // match db::setup_complete_database(&pool, true).await {
+                        //     Ok(_) => eprintln!("Setup database successfully."),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up database: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
 
                         pool
                     },
