@@ -100,7 +100,6 @@ pub async fn get_patient_data(state: tauri::State<'_, DatabaseState>, patient_id
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
         Err(err) => {
-            eprintln!("Encryption key not provided: {}", err);
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -142,7 +141,6 @@ pub async fn get_patients_data(state: State<'_, DatabaseState>) -> Result<Vec<Pa
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
         Err(err) => {
-            eprintln!("Encryption key not provided: {}", err);
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -452,17 +450,14 @@ pub async fn create_patient_activity(state: State<'_, DatabaseState>, patient_id
         Err(err) => {"".to_string()},
     };
 
-    eprintln!("activity_time: {}", activity_time);
-
     // Convert activity_time from String to DateTime<Utc>
     let activity_time = match activity_time.parse::<DateTime<Utc>>() {
         Ok(dt) => dt,
         Err(_) => return Err("Invalid datetime format".to_string()),
     };
 
-    eprintln!("create_patient_activity");
-        match sqlx::query!(
-            r#"
+    match sqlx::query!(
+        r#"
         INSERT INTO patient_activity (
             patient_id, 
             procedure_id, 

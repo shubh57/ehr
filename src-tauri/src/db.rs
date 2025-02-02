@@ -14,14 +14,12 @@ pub struct DatabaseState {
 // Function to connect to postgresql db
 pub async fn connect_to_database() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is required");
-    println!("database_url: {}", database_url);
     let pool = PgPoolOptions::new()
         .max_connections(10)
         .test_before_acquire(true)
         .connect(&database_url)
         .await?;
     
-    println!("{:?}", pool);
     Ok(pool)
 }
 
