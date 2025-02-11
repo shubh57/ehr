@@ -101,7 +101,7 @@ const PatientOptics: React.FC = () => {
                             <ListItemAvatar>
                                 <Avatar
                                     sx={{
-                                        bgcolor: patientData?.gender === 'MALE' ? theme.palette.male.main : theme.palette.female.main,
+                                        bgcolor: patientData?.gender === 'MALE' ? '#2196f3' : '#ec407a',
                                         width: theme.spacing(10),
                                         height: theme.spacing(10),
                                     }}
