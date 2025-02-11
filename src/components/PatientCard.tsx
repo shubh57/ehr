@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { Patient } from '../pages/ConsultantPage';
-import { Box, Typography, Avatar, useTheme, CircularProgress } from '@mui/material';
+import { Box, Typography, Avatar, useTheme, CircularProgress, Button } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
+import { useNavigate } from 'react-router-dom';
 
 interface PatientCardProps {
     patient_id: number;
@@ -11,6 +12,7 @@ interface PatientCardProps {
 
 const PatientCard: React.FC<PatientCardProps> = ({ patient_id }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const [patientData, setPatientData] = useState<Patient>();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -84,6 +86,13 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient_id }) => {
                         <Typography variant='body1' color='textSecondary'>
                             {patientData?.mr_number || 'N/A'}
                         </Typography>
+                        <Button
+                            variant='contained'
+                            onClick={() => navigate(`/patient_optics/${patient_id}`)}
+                            sx={{ alignSelf: 'flex-start', marginTop: '8px', backgroundColor: theme.palette.common.black, color: theme.palette.common.white }}
+                        >
+                            Optics
+                        </Button>
                     </Box>
                 </>
             )}
