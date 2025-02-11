@@ -238,23 +238,31 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                     onMouseLeave={() => setHoveredProcedureId(null)}
                                                     sx={{
                                                         flex: '0 0 calc(33.333% - 16px)',
-                                                        backgroundColor: snapshot.isDragging ? theme.palette.background.paperDark : theme.palette.background.paper,
+                                                        backgroundColor: snapshot.isDragging
+                                                            ? theme.palette.background.paperDark
+                                                            : theme.palette.background.paper,
                                                         borderRadius: '8px',
                                                         padding: 8,
                                                         transition: 'transform 0.2s, box-shadow 0.2s',
-                                                        transform: hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging ? 'scale(1.02)' : 'none',
+                                                        transform:
+                                                            hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging
+                                                                ? 'scale(1.02)'
+                                                                : 'none',
                                                         boxShadow:
                                                             hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging
                                                                 ? theme.shadows[5]
                                                                 : theme.shadows[2],
-                                                        zIndex: hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging ? 1 : 'auto',
+                                                        zIndex:
+                                                            hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging
+                                                                ? 1
+                                                                : 'auto',
                                                         height: 'fit-content',
                                                         position: 'relative',
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         gap: 3,
                                                         cursor: 'grab',
-                                                        border: '1px solid black'
+                                                        border: '1px solid black',
                                                     }}
                                                 >
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

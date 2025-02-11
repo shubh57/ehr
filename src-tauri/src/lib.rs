@@ -13,6 +13,8 @@ use tokio::fs;
 // Modules
 pub mod db;
 pub mod patients;
+pub mod db_vision;
+pub mod vision;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -30,26 +32,18 @@ pub fn run() {
                     Ok(pool) => {
                         eprintln!("Database connected successfully.");
 
-                        // match db::setup_tables(&pool).await {
-                        //     Ok(_) => eprintln!("Tables setup successfully."),
-                        //     Err(err) => {
-                        //         eprintln!("Error while setting up tables: {}", err);
-                        //         std::process::exit(1);
-                        //     }
-                        // }
-
-                        // match db::fill_dummy_data(&pool).await {
-                        //     Ok(_) => eprintln!("Filled dummy data"),
-                        //     Err(err) => {
-                        //         eprintln!("Error while filling dummy data: {}", err);
-                        //         std::process::exit(1);
-                        //     }
-                        // }
-
                         // match db::setup_complete_database(&pool, true).await {
                         //     Ok(_) => eprintln!("Setup database successfully."),
                         //     Err(err) => {
                         //         eprintln!("Error while setting up database: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
+
+                        // match db_vision::setup_vision_tables(&pool, true).await {
+                        //     Ok(_) => eprintln!("Vision tables setup up successfully."),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up vision tables: {}", err);
                         //         std::process::exit(1);
                         //     }
                         // }
@@ -90,7 +84,16 @@ pub fn run() {
             patients::get_patient_procedures,
             patients::add_comment_to_procedure,
             patients::get_all_procedures,
-            patients::create_patient_activity])
+            patients::create_patient_activity,
+            patients::get_patient_complaints,
+
+            vision::get_vision_data,
+            vision::get_refraction_data,
+            vision::update_vision_data,
+            vision::update_refraction_data,
+            vision::get_patient_eye_measurement_data,
+            vision::update_patient_eye_measurement_data
+        ])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");
 }

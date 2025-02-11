@@ -1,11 +1,10 @@
 // src-tauri/src/patients.rs
 
-use std::fmt::format;
-
 // Dependencies
 use tauri::State;
+use std::fmt::format;
 use crate::db::DatabaseState;
-use sqlx::{pool, postgres::PgRow, Column, Executor, Row};
+use sqlx::{pool, postgres::PgRow, Column};
 use chrono;
 use serde::Serialize;
 use chrono::{Utc, NaiveDate, DateTime};
@@ -100,7 +99,6 @@ pub async fn get_patient_data(state: tauri::State<'_, DatabaseState>, patient_id
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
         Err(err) => {
-            eprintln!("Encryption key not provided: {}", err);
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -136,13 +134,12 @@ pub async fn get_patient_data(state: tauri::State<'_, DatabaseState>, patient_id
 }
 
 // Endpoint to get all patients data
-#[tauri::command]
+    #[tauri::command]
 pub async fn get_patients_data(state: State<'_, DatabaseState>) -> Result<Vec<PatientData>, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
         Err(err) => {
-            eprintln!("Encryption key not provided: {}", err);
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -452,17 +449,14 @@ pub async fn create_patient_activity(state: State<'_, DatabaseState>, patient_id
         Err(err) => {"".to_string()},
     };
 
-    eprintln!("activity_time: {}", activity_time);
-
     // Convert activity_time from String to DateTime<Utc>
     let activity_time = match activity_time.parse::<DateTime<Utc>>() {
         Ok(dt) => dt,
         Err(_) => return Err("Invalid datetime format".to_string()),
     };
 
-    eprintln!("create_patient_activity");
-        match sqlx::query!(
-            r#"
+    match sqlx::query!(
+        r#"
         INSERT INTO patient_activity (
             patient_id, 
             procedure_id, 
@@ -494,5 +488,42 @@ pub async fn create_patient_activity(state: State<'_, DatabaseState>, patient_id
     .await {
         Ok(record) => Ok(format!("Successfully created patient activity: {}", record.activity_id)),
         Err(err) => Err(format!("Error while creating patient activity: {}", err))
+    }
+}
+
+// Endpoint to fetch all complaints for a patient
+#[tauri::command]
+pub async fn get_patient_complaints(state: State<'_, DatabaseState>, patient_id: i32) -> Result<Vec<String>, String> {
+    let pool = state.pool.lock().await;
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => {key},
+        Err(err) => {"".to_string()},
+    };
+
+    match sqlx::query!(
+        r#"
+        SELECT
+            pgp_sym_decrypt(patient_complaint::bytea, $1) as patient_complaint
+        FROM
+            patient_activity
+        WHERE 
+            patient_id = $2
+        "#,
+        &encryption_key,
+        &patient_id
+    )
+    .fetch_all(&*pool)
+    .await {
+        Ok(data) => {
+            let mut res = vec![];
+            for entry in data.iter() {
+                if let Some(val) = entry.patient_complaint.clone() {
+                    res.push(val);
+                }
+            }
+
+            Ok(res)
+        },
+        Err(err) => Err(format!("Error while fetching patient complaints: {}", err))
     }
 }

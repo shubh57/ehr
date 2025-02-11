@@ -22,6 +22,16 @@ declare module '@mui/material/styles' {
         default: string;
         secondary: string;
     }
+    interface TypeMale {
+        light: String;
+        main: String;
+        text: String;
+    }
+    interface TypeFemale {
+        light: String;
+        main: String;
+        text: String;
+    }
     interface Palette {
         tertiary: TypeTertiary;
         border: TypeBorder;
@@ -32,6 +42,8 @@ declare module '@mui/material/styles' {
         tertiary?: TypeTertiary;
         text?: Partial<TypeText>;
         border?: Partial<TypeBorder>;
+        male?: Partial<TypeMale>;
+        female?: Partial<TypeFemale>;
     }
 }
 
@@ -71,6 +83,16 @@ const palette: PaletteOptions = {
     border: {
         default: '#CBD5E1',
         secondary: '#EEF1F6',
+    },
+    male: {
+        light: '#e3f2fd', // Light blue background
+        main: '#2196f3', // Modern blue
+        text: '#1976d2', // Darker blue for text
+    },
+    female: {
+        light: '#fce4ec', // Light pink background
+        main: '#ec407a', // Modern pink
+        text: '#d81b60', // Darker pink for text
     },
 };
 

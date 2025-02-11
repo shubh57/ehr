@@ -14,14 +14,12 @@ pub struct DatabaseState {
 // Function to connect to postgresql db
 pub async fn connect_to_database() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is required");
-    println!("database_url: {}", database_url);
     let pool = PgPoolOptions::new()
         .max_connections(10)
         .test_before_acquire(true)
         .connect(&database_url)
         .await?;
     
-    println!("{:?}", pool);
     Ok(pool)
 }
 
@@ -32,6 +30,8 @@ pub async fn delete_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()
     let drop_query = r#"
         DROP TABLE IF EXISTS patient_history;
         DROP TABLE IF EXISTS patient_activity;
+        DROP TABLE IF EXISTS vision;
+        DROP TABLE IF EXISTS refraction;
         DROP TABLE IF EXISTS procedures;
         DROP TABLE IF EXISTS patients;
         DROP TABLE IF EXISTS users;
@@ -80,6 +80,7 @@ pub async fn setup_patient_activity_table(pool: &sqlx::Pool<sqlx::Postgres>) -> 
             patient_id INT REFERENCES patients(patient_id) ON DELETE CASCADE,
             status VARCHAR(20) CHECK (status IN ('COMPLETED', 'INCOMPLETE', 'TO_BE_REVIEWED')) NOT NULL,
             procedure_id INT REFERENCES procedures(procedure_id) ON DELETE CASCADE,
+            doctor_id INT REFERENCES users(user_id) ON DELETE CASCADE,
             doctors_note BYTEA, -- Encrypted field for doctor's note
             patient_complaint BYTEA NOT NULL, -- Encrypted feild for patient's complaint
             comments BYTEA,
@@ -224,12 +225,13 @@ pub async fn fill_patient_activity_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>)
     // Query to fill patient_activity table with dummy values
     let patient_activity_fill_query = format!(r#"
         INSERT INTO patient_activity (
-            patient_id, status, procedure_id, doctors_note, activity_time, patient_complaint
+            patient_id, status, procedure_id, doctor_id, doctors_note, activity_time, patient_complaint
         )
         VALUES
         (
             1,
             'COMPLETED',
+            1,
             1,
             pgp_sym_encrypt('Patient is advised to monitor blood pressure daily.', '{}'),
             '2025-01-20 11:45:00+00',
@@ -239,6 +241,7 @@ pub async fn fill_patient_activity_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>)
             2,
             'TO_BE_REVIEWED',
             2,
+            1,
             pgp_sym_encrypt('Follow-up required for potential anemia.', '{}'),
             '2025-01-20 12:00:00+00',
             pgp_sym_encrypt('Patient does not stop bleeding when cut.', '{}')
@@ -247,6 +250,7 @@ pub async fn fill_patient_activity_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>)
             2,
             'INCOMPLETE',
             3,
+            1,
             pgp_sym_encrypt('Patient needs chest X-Ray to rule out pneumonia.', '{}'),
             '2025-01-21 11:45:00+00',
             pgp_sym_encrypt('Patient complains of persistent cough and chest pain.', '{}')
@@ -296,7 +300,8 @@ pub async fn fill_users_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::R
         VALUES
         ('DOCTOR', 'Eve', 'Taylor'),
         ('NURSE', 'Charlie', 'Brown'),
-        ('ADMIN', 'Dana', 'White');
+        ('ADMIN', 'Dana', 'White'),
+        ('DOCTOR', 'John', 'Smith');
     "#;
     pool.execute(user_fill_query).await?;
 
@@ -307,18 +312,18 @@ pub async fn fill_users_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::R
 pub async fn setup_complete_database(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bool) -> sqlx::Result<()> {
     delete_tables(pool).await?;
     
+    setup_users_table(pool).await?;
     setup_patients_table(pool).await?;
     setup_procedures_table(pool).await?;
     setup_patient_activity_table(pool).await?;
     setup_patient_history_table(pool).await?;
-    setup_users_table(pool).await?;
 
     if dummy_data {
+        fill_users_dummy_data(pool).await?;
         fill_patients_dummy_data(pool).await?;
         fill_procedures_dummy_data(pool).await?;
         fill_patient_activity_dummy_data(pool).await?;
         fill_patient_history_dummy_data(pool).await?;
-        fill_users_dummy_data(pool).await?;
     }
 
     Ok(())

@@ -53,9 +53,9 @@ const ProcedureDetailsModal: React.FC<{
                 position: 'top',
             });
             onClose();
-            setDoctorNote("");
+            setDoctorNote('');
             setActivityTime(dayjs());
-            setPatientComplaint("");
+            setPatientComplaint('');
         } catch (error) {
             console.error('Error while creating procedure: ', error);
             toast({
