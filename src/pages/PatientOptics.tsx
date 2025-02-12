@@ -23,6 +23,47 @@ const PatientOptics: React.FC = () => {
 
     const [patientData, setPatientData] = useState<Patient>();
     const [patientDataLoading, setPatientDataLoading] = useState<boolean>(false);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const threshold = 10;
+
+    useEffect(() => {
+        const handleTouchStart = (e: any) => setTouchStart(e.touches[0].clientX);
+        const handleTouchMove = (e: any) => setTouchEnd(e.touches[0].clientX);
+        const handleTouchEnd = () => {
+            if (!touchStart || !touchEnd) return;
+            const diff = touchStart - touchEnd;
+
+            if (diff > threshold) {
+                navigate(`/patient_procedure/${patient_id}`);
+            } else if (diff < -threshold) {
+                navigate(`/patient_details/${patient_id}`);
+            }
+
+            setTouchStart(null);
+            setTouchEnd(null);
+        };
+
+        const handleKeyDown = (e: any) => {
+            if (e.key === 'ArrowLeft') {
+                navigate(`/patient_procedure/${patient_id}`);
+            } else if (e.key === 'ArrowRight') {
+                navigate(`/patient_details/${patient_id}`);
+            }
+        };
+
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [touchStart, touchEnd]);
 
     const fetchPatientData = async () => {
         try {
@@ -433,7 +474,7 @@ const PatientOptics: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     width: '100%',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
                 }}
             >
                 <Box
@@ -452,11 +493,9 @@ const PatientOptics: React.FC = () => {
                 </Box>
                 <Box
                     sx={{
-                        width: '38%'
+                        width: '38%',
                     }}
-                >
-
-                </Box>
+                ></Box>
             </Box>
         </Box>
     );

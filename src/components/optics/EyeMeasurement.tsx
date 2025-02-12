@@ -48,8 +48,8 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
                 patientId: patient_id,
                 side: 'RIGHT',
             });
-            console.log("dataLeft: ", dataLeft);
-            console.log("dataRight: ", dataRight);
+            console.log('dataLeft: ', dataLeft);
+            console.log('dataRight: ', dataRight);
             setLeftEyeMeasurement(dataLeft);
             setRightEyeMeasurement(dataRight);
         } catch (error) {
@@ -69,8 +69,24 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
     const handleEyeMeasurementUpdate = async () => {
         try {
             setUpdateLoading(true);
-            await invoke('update_patient_eye_measurement_data', {patientId: patient_id, iopAt: leftEyeMeasurement?.iop_at, iopNct: leftEyeMeasurement?.iop_nct, cct: leftEyeMeasurement?.cct, tond: leftEyeMeasurement?.tond, side: "LEFT", updatedBy: 1});
-            await invoke('update_patient_eye_measurement_data', {patientId: patient_id, iopAt: rightEyeMeasurement?.iop_at, iopNct: rightEyeMeasurement?.iop_nct, cct: rightEyeMeasurement?.cct, tond: rightEyeMeasurement?.tond, side: "RIGHT", updatedBy: 1});
+            await invoke('update_patient_eye_measurement_data', {
+                patientId: patient_id,
+                iopAt: leftEyeMeasurement?.iop_at,
+                iopNct: leftEyeMeasurement?.iop_nct,
+                cct: leftEyeMeasurement?.cct,
+                tond: leftEyeMeasurement?.tond,
+                side: 'LEFT',
+                updatedBy: 1,
+            });
+            await invoke('update_patient_eye_measurement_data', {
+                patientId: patient_id,
+                iopAt: rightEyeMeasurement?.iop_at,
+                iopNct: rightEyeMeasurement?.iop_nct,
+                cct: rightEyeMeasurement?.cct,
+                tond: rightEyeMeasurement?.tond,
+                side: 'RIGHT',
+                updatedBy: 1,
+            });
         } catch (error) {
             console.error('Error while updating eye measurement data: ', error);
             toast({
@@ -96,17 +112,17 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
             const data: EyeMeasurementData = {
                 measurement_id: 21,
                 patient_id: patient_id,
-                iop_at: "",
-                iop_nct: "",
-                cct: "",
-                tond: "",
-                side: "LEFT",
-                created_at: "",
-                created_by: "",
-                updated_at: "",
-                updated_by: "",
-                [field]: event.target.value
-            }
+                iop_at: '',
+                iop_nct: '',
+                cct: '',
+                tond: '',
+                side: 'LEFT',
+                created_at: '',
+                created_by: '',
+                updated_at: '',
+                updated_by: '',
+                [field]: event.target.value,
+            };
             setLeftEyeMeasurement(data);
         }
     };
@@ -118,17 +134,17 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
             const data: EyeMeasurementData = {
                 measurement_id: 21,
                 patient_id: patient_id,
-                iop_at: "",
-                iop_nct: "",
-                cct: "",
-                tond: "",
-                side: "RIGHT",
-                created_at: "",
-                created_by: "",
-                updated_at: "",
-                updated_by: "",
-                [field]: event.target.value
-            }
+                iop_at: '',
+                iop_nct: '',
+                cct: '',
+                tond: '',
+                side: 'RIGHT',
+                created_at: '',
+                created_by: '',
+                updated_at: '',
+                updated_by: '',
+                [field]: event.target.value,
+            };
             setRightEyeMeasurement(data);
         }
     };
@@ -141,7 +157,7 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
     };
 
     return (
-        <Box 
+        <Box
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -155,7 +171,9 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
             {/* Toggle button for edit mode */}
             <Paper elevation={3} style={{ padding: theme.spacing(2), width: '100%', height: '100%', borderRadius: '28px' }}>
                 <Box display='flex' justifyContent='flex-end' mb={2}>
-                    <IconButton onClick={toggleEditMode} disabled={updateLoading}>{updateLoading ? <CircularProgress size={20} /> : editMode ? <LockOpenIcon /> : <LockIcon />}</IconButton>
+                    <IconButton onClick={toggleEditMode} disabled={updateLoading}>
+                        {updateLoading ? <CircularProgress size={20} /> : editMode ? <LockOpenIcon /> : <LockIcon />}
+                    </IconButton>
                 </Box>
                 {measurements.map((measurement) => (
                     <Grid container spacing={2} alignItems='center' key={measurement.field} style={{ marginBottom: theme.spacing(1) }}>

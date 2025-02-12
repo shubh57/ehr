@@ -27,6 +27,7 @@ import {
     Schedule as TimeIcon,
     MedicalInformation as MedicalIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 export type AppointmentData = {
     patient_id: number;
@@ -49,6 +50,7 @@ export type AppointmentData = {
 const Appointments = () => {
     const [appointmentData, setAppointmentData] = useState<AppointmentData[]>([]);
     const theme = useTheme();
+    const navigate = useNavigate();
 
     const fetchAppointmentData = async () => {
         try {
@@ -249,7 +251,7 @@ const Appointments = () => {
 
                                         {/* Patient Information */}
                                         <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }} onClick={() => navigate(`/patient_details/${appointment.patient_id}`)}>
                                                 <Avatar
                                                     sx={{
                                                         bgcolor: appointment.gender === 'MALE' ? '#1976d2' : '#d81b60',
