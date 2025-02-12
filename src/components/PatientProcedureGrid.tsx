@@ -238,9 +238,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                     onMouseLeave={() => setHoveredProcedureId(null)}
                                                     sx={{
                                                         flex: '0 0 calc(33.333% - 16px)',
-                                                        backgroundColor: snapshot.isDragging
-                                                            ? theme.palette.background.paperDark
-                                                            : theme.palette.background.paper,
+                                                        backgroundColor: getStatusColor(procedure.status),
                                                         borderRadius: '8px',
                                                         padding: 8,
                                                         transition: 'transform 0.2s, box-shadow 0.2s',
@@ -265,22 +263,22 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                         border: '1px solid black',
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: getTextColor(procedure.status) }}>
                                                         <Typography variant='body1' fontWeight='bold'>
                                                             {procedure.procedure_name}
                                                         </Typography>
                                                         <Chip
                                                             label={getLabel(procedure.status)}
                                                             sx={{
-                                                                backgroundColor: getStatusColor(procedure.status),
-                                                                color: getTextColor(procedure.status),
+                                                                backgroundColor: theme.palette.background.paper,
+                                                                color: 'black',
                                                                 fontWeight: 'bold',
                                                             }}
                                                         />
                                                     </Box>
 
                                                     <Box sx={{ flex: 1 }}>
-                                                        <Typography variant='body2' color='text.secondary'>
+                                                        <Typography variant='body2' color={getTextColor(procedure.status)}>
                                                             {new Date(procedure.activity_time).toLocaleString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: '2-digit',
@@ -293,7 +291,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                     </Box>
 
                                                     {hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging && (
-                                                        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, color: getTextColor(procedure.status) }}>
                                                             {procedure.procedure_description && (
                                                                 <Typography variant='body2'>
                                                                     <strong>Description:</strong> {procedure.procedure_description}
@@ -344,7 +342,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                             }
                                                         }}
                                                         fullWidth
-                                                        sx={{ mt: 2 }}
+                                                        sx={{ mt: 2, color: getTextColor(procedure.status) }}
                                                         InputProps={{
                                                             endAdornment: (
                                                                 <InputAdornment position='end'>
