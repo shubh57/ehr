@@ -251,7 +251,10 @@ const Appointments = () => {
 
                                         {/* Patient Information */}
                                         <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }} onClick={() => navigate(`/patient_details/${appointment.patient_id}`)}>
+                                            <Box
+                                                sx={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }}
+                                                onClick={() => navigate(`/patient_details/${appointment.patient_id}`)}
+                                            >
                                                 <Avatar
                                                     sx={{
                                                         bgcolor: appointment.gender === 'MALE' ? '#1976d2' : '#d81b60',

@@ -3,7 +3,7 @@
 // Dependencies
 import { ArrowBack } from '@mui/icons-material';
 import { Avatar, Box, Chip, CircularProgress, ListItemAvatar, Typography, useTheme, Paper, CardContent, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Patient } from './ConsultantPage';
 import { useToast } from '@chakra-ui/react';
@@ -20,28 +20,36 @@ const PatientOptics: React.FC = () => {
     const navigate = useNavigate();
     const toast = useToast();
     const patientId = parseInt(patient_id || '0');
+    const swipeHandled = useRef(false);
 
     const [patientData, setPatientData] = useState<Patient>();
     const [patientDataLoading, setPatientDataLoading] = useState<boolean>(false);
-    const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
-    const threshold = 10;
 
     useEffect(() => {
-        const handleTouchStart = (e: any) => setTouchStart(e.touches[0].clientX);
-        const handleTouchMove = (e: any) => setTouchEnd(e.touches[0].clientX);
-        const handleTouchEnd = () => {
-            if (!touchStart || !touchEnd) return;
-            const diff = touchStart - touchEnd;
-
-            if (diff > threshold) {
-                navigate(`/patient_procedure/${patient_id}`);
-            } else if (diff < -threshold) {
-                navigate(`/patient_details/${patient_id}`);
+        const handleWheel = (e: any) => {
+            if (swipeHandled.current) {
+                return;
             }
+            e.preventDefault();
 
-            setTouchStart(null);
-            setTouchEnd(null);
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                const threshold = 20;
+                if (e.deltaX > threshold) {
+                    swipeHandled.current = true;
+                    navigate(`/patient_details/${patient_id}`);
+
+                    setTimeout(() => {
+                        swipeHandled.current = false;
+                    }, 50000);
+                } else if (e.deltaX < -threshold) {
+                    swipeHandled.current = true;
+                    navigate(`/patient_procedure/${patient_id}`);
+
+                    setTimeout(() => {
+                        swipeHandled.current = false;
+                    }, 50000);
+                }
+            }
         };
 
         const handleKeyDown = (e: any) => {
@@ -52,18 +60,14 @@ const PatientOptics: React.FC = () => {
             }
         };
 
-        document.addEventListener('touchstart', handleTouchStart);
-        document.addEventListener('touchmove', handleTouchMove);
-        document.addEventListener('touchend', handleTouchEnd);
-        document.addEventListener('keydown', handleKeyDown);
-
+        // Attach the listener to the desired element or window
+        window.addEventListener('wheel', handleWheel, { passive: false });
+        window.addEventListener('keydown', handleKeyDown);
         return () => {
-            document.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
-            document.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('wheel', handleWheel);
+            window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [touchStart, touchEnd]);
+    }, []);
 
     const fetchPatientData = async () => {
         try {

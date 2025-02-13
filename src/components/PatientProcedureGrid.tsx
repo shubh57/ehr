@@ -263,7 +263,14 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                         border: '1px solid black',
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: getTextColor(procedure.status) }}>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            color: getTextColor(procedure.status),
+                                                        }}
+                                                    >
                                                         <Typography variant='body1' fontWeight='bold'>
                                                             {procedure.procedure_name}
                                                         </Typography>
@@ -291,7 +298,15 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                     </Box>
 
                                                     {hoveredProcedureId === procedure.activity_id && !showProcedureList && !snapshot.isDragging && (
-                                                        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, color: getTextColor(procedure.status) }}>
+                                                        <Box
+                                                            sx={{
+                                                                mt: 1,
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                gap: 1,
+                                                                color: getTextColor(procedure.status),
+                                                            }}
+                                                        >
                                                             {procedure.procedure_description && (
                                                                 <Typography variant='body2'>
                                                                     <strong>Description:</strong> {procedure.procedure_description}
