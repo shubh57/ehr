@@ -83,7 +83,7 @@ const ConsultantPage = () => {
             >
                 <Appointments />
             </Box>
-            {/* <Box
+            <Box
                 sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -94,7 +94,7 @@ const ConsultantPage = () => {
                 }}
             >
                 <PatientList />
-            </Box> */}
+            </Box>
         </Box>
     );
 };
