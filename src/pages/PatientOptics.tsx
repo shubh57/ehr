@@ -2,7 +2,7 @@
 
 // Dependencies
 import { ArrowBack } from '@mui/icons-material';
-import { Avatar, Box, Chip, CircularProgress, ListItemAvatar, Typography, useTheme, Paper, CardContent, TextField } from '@mui/material';
+import { Avatar, Box, Chip, CircularProgress, ListItemAvatar, Typography, useTheme, Paper, CardContent, TextField, Button } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Patient } from './ConsultantPage';
@@ -186,6 +186,7 @@ const PatientOptics: React.FC = () => {
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
+                        gap: '0.5rem',
                     }}
                 >
                     {patientData && (
@@ -201,6 +202,13 @@ const PatientOptics: React.FC = () => {
                             <Typography variant='h6'>MR Number: {patientData?.mr_number}</Typography>
                         </Paper>
                     )}
+                    <Button
+                        variant='contained'
+                        onClick={() => navigate(`/canvas`)}
+                        sx={{ alignSelf: 'flex-start', marginTop: '8px', backgroundColor: theme.palette.common.black, color: theme.palette.common.white }}
+                    >
+                        Canvas
+                    </Button>
                 </Box>
             </Box>
             <Box
