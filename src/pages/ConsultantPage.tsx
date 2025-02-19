@@ -17,22 +17,7 @@ export type Patient = {
 };
 
 const ConsultantPage = () => {
-    const [patientData, setPatientData] = useState<Patient[]>([]);
-    const navigate = useNavigate();
     const theme = useTheme();
-
-    const fetchPatientData = async () => {
-        try {
-            const patients: Patient[] = await invoke('get_patients_data');
-            setPatientData(patients);
-        } catch (error) {
-            console.error('Error fetching patient data:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchPatientData();
-    }, []);
 
     return (
         <Box

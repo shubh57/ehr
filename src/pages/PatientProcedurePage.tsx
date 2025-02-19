@@ -23,13 +23,13 @@ const PatientProcedurePage: React.FC = () => {
                 const threshold = 20;
                 if (e.deltaX > threshold) {
                     swipeHandled.current = true;
-                    navigate(`/patient_optics/${patient_id}`);   
-                    
+                    navigate(`/patient_optics/${patient_id}`);
+
                     setTimeout(() => {
                         swipeHandled.current = false;
                     }, 50000);
                 } else if (e.deltaX < -threshold) {
-                    // navigate(`/patient_optics/${patient_id}`);                
+                    // navigate(`/patient_optics/${patient_id}`);
                 }
             }
         };

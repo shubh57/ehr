@@ -7,6 +7,7 @@ import ConsultantPage from '../pages/ConsultantPage';
 import PatientDetails from '../pages/PatientDetails';
 import PatientProcedurePage from '../pages/PatientProcedurePage';
 import PatientOptics from '../pages/PatientOptics';
+import Canvas from './Canvas';
 
 const AllRoutes = () => {
     return (
@@ -15,6 +16,7 @@ const AllRoutes = () => {
             <Route path='/patient_details/:patient_id' element={<PatientDetails />} />
             <Route path='/patient_procedure/:patient_id' element={<PatientProcedurePage />} />
             <Route path='/patient_optics/:patient_id' element={<PatientOptics />} />
+            <Route path='/canvas' element={<Canvas />} />
             <Route path='*' element={<UnderConstruction />} />
         </Routes>
     );

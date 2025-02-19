@@ -16,7 +16,7 @@
         "width": 800,
         "height": 600,
         "resizable": true,
-        "fullscreen": false,
+        "fullscreen": true,
         "center": true,
         "visible": true,
         "label": "main"
@@ -55,5 +55,7 @@
       "providerShortName": null,
       "signingIdentity": null
     }
+  },
+  "plugins": {
   }
 }
