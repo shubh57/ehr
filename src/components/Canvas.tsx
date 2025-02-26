@@ -1,9 +1,12 @@
 import { Box, Typography, Slider, Button, Paper, Grid } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { save } from '@tauri-apps/plugin-dialog';
-import { writeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { writeFile, BaseDirectory, readFile, create, mkdir } from '@tauri-apps/plugin-fs';
+import { join } from '@tauri-apps/api/path';
+import { exists } from '@tauri-apps/plugin-fs';
 import { ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@chakra-ui/react';
 
 interface CanvasProps {
     width?: number;
@@ -15,6 +18,7 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
     const isDrawing = useRef(false);
     const lastPoint = useRef<{ x: number; y: number } | null>(null);
     const navigate = useNavigate();
+    const toast = useToast();
     const [inputDevice, setInputDevice] = useState<string>('Mouse');
     const [availableDevices, setAvailableDevices] = useState<string[]>([]);
     const [color, setColor] = useState<string>('black');
@@ -23,7 +27,14 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
     const [eraseMode, setEraseMode] = useState<boolean>(false);
     const [pointerPos, setPointerPos] = useState<{ x: number; y: number } | null>(null);
 
-    // Detect available input devices
+    const debounce = (func: Function, delay: number) => {
+        let timeoutId: ReturnType<typeof setTimeout>;
+        return (...args: any[]) => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => func(...args), delay);
+        };
+    };
+
     useEffect(() => {
         const detectInputDevices = () => {
             const devices: string[] = [];
@@ -51,11 +62,72 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
             const arrayBuffer = await blob.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
 
-            console.log("BaseDirectory: ", BaseDirectory.AppLocalData);
-
             await writeFile(fileName, uint8Array, {baseDir: BaseDirectory.AppLocalData});
         }
     };
+
+    const dataUrlToUint8Array = (dataUrl: string): Uint8Array => {
+        const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+        const binaryString = atob(base64Data);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    };
+
+    const autoSave = async () => {
+        const canvas = canvasRef.current;
+        if (!canvas)    return;
+        const dataUrl = canvas.toDataURL('image/png');
+        const uint8Array = dataUrlToUint8Array(dataUrl);
+
+        const dirPath = await join(BaseDirectory.AppData.toString(), 'com.ehrportal.app');
+        const filePath = await join(dirPath, 'autosave.png');
+
+        const dirExsits = await exists(dirPath);
+        if (!dirExsits) {
+            await mkdir(dirPath, { recursive: true});
+        }
+
+        await writeFile(filePath, uint8Array);
+        // await writeFile("autosave.png", uint8Array, {baseDir: BaseDirectory.AppLocalData});
+        
+        toast({
+            title: 'autosaved canvas',
+            status: 'success',
+            duration: 4000,
+            position: 'top',
+            isClosable: true
+        });
+    };
+
+    const autoSaveDebounced = debounce(autoSave, 1000);
+
+    const loadSavedCanvas = async () => {
+        try {
+            const fileContent = await readFile("autosave.png", {baseDir: BaseDirectory.AppLocalData});
+
+            const img = new Image();
+            img.onload = () => {
+                const canvas = canvasRef.current;
+                if (canvas) {
+                    const context = canvas.getContext('2d');
+                    context?.drawImage(img, 0, 0);
+                }
+            }
+
+            const blob = new Blob([fileContent], {type: 'image/png'});
+            img.src = URL.createObjectURL(blob);
+        } catch (error) {
+            console.error("Error while loading saved canvas: ", error);
+        }
+    };
+
+    useEffect(() => {
+        loadSavedCanvas();
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -129,6 +201,8 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
         const endDrawing = () => {
             isDrawing.current = false;
             lastPoint.current = null;
+
+            autoSaveDebounced();
         };
 
         // Add appropriate event listeners based on the input device
