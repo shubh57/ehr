@@ -1,17 +1,35 @@
-// src/theme/muiTheme.ts
+// src/theme.ts
 
-// Dependencies
 import { createTheme, PaletteOptions, Components, Shadows } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
     interface TypeTertiary {
         main: string;
+        lightOrange: string;
+        lightYellow: string;
+        lightGreen: string;
+        red: string;
     }
     interface TypePrimary {
         darker: string;
     }
+    interface PaperYellow {
+        default: string;
+        dark: string;
+        darklight: string;
+        light: string;
+        textyellow: string;
+    }
+    interface PaperGreen {
+        default: string;
+    }
+    interface PaperRed {
+        default: string;
+    }
     interface TypeBackground {
         paperLight: string;
+        paperExtraLight: string;
+        brownishDark: string;
         paperDark: string;
     }
     interface TypeText {
@@ -22,19 +40,12 @@ declare module '@mui/material/styles' {
         default: string;
         secondary: string;
     }
-    interface TypeMale {
-        light: String;
-        main: String;
-        text: String;
-    }
-    interface TypeFemale {
-        light: String;
-        main: String;
-        text: String;
-    }
     interface Palette {
         tertiary: TypeTertiary;
         border: TypeBorder;
+        paperYellow: PaperYellow;
+        paperGreen: PaperGreen;
+        paperRed: PaperRed;
     }
 
     interface PaletteOptions {
@@ -42,8 +53,9 @@ declare module '@mui/material/styles' {
         tertiary?: TypeTertiary;
         text?: Partial<TypeText>;
         border?: Partial<TypeBorder>;
-        male?: Partial<TypeMale>;
-        female?: Partial<TypeFemale>;
+        paperYellow?: Partial<PaperYellow>;
+        paperGreen?: Partial<PaperGreen>;
+        paperRed?: Partial<PaperRed>;
     }
 }
 
@@ -59,10 +71,11 @@ const palette: PaletteOptions = {
         contrastText: '#CBD5E1', // Darkest grey
     },
     tertiary: {
-        main: '#FCD34D', // Yellow
-    },
-    success: {
-        main: '#86EFAC',
+        main: '#FCD34D33', // Yellow
+        lightOrange: '#FDBA74', // Light Orange (high priority color)
+        lightYellow: '#FDE047', // Light Yellow (medium priority color)
+        lightGreen: '#BEF264', // Light Green (low priority color)
+        red: '#EF4444', // Red
     },
     error: {
         main: '#B91C1C', // Red
@@ -71,7 +84,9 @@ const palette: PaletteOptions = {
         default: '#FFFFFF', // White background
         paper: '#F1F5F9', // Light grey background for paper-like components
         paperLight: '#F8FAFC', // Lighter grey background for paper-like components
+        paperExtraLight: '#FCFDFE',
         paperDark: '#DEE5ED', // Darker grey background for paper-like components
+        brownishDark: '#78350F',
     },
     text: {
         primary: '#020617', // Dark text color (primary text)
@@ -84,15 +99,18 @@ const palette: PaletteOptions = {
         default: '#CBD5E1',
         secondary: '#EEF1F6',
     },
-    male: {
-        light: '#e3f2fd', // Light blue background
-        main: '#2196f3', // Modern blue
-        text: '#1976d2', // Darker blue for text
+    paperYellow: {
+        default: '#C2410C',
+        dark: '#7C2D12',
+        darklight: '#FEF3C7',
+        light: '#FDE68A',
+        textyellow: '#92400E',
     },
-    female: {
-        light: '#fce4ec', // Light pink background
-        main: '#ec407a', // Modern pink
-        text: '#d81b60', // Darker pink for text
+    paperGreen: {
+        default: '#BBF7D0',
+    },
+    paperRed: {
+        default: '#FECACA',
     },
 };
 
@@ -115,6 +133,12 @@ const typography = {
         fontWeight: 500,
         lineHeight: '24px',
         letterSpacing: '0.1px',
+    },
+    h5: {
+        fontSize: '16px',
+        fontWeight: 400,
+        lineHeight: '24px',
+        letterSpacing: '0.5px',
     },
     subtitle1: {
         fontSize: '12px',

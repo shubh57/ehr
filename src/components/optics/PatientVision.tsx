@@ -1,6 +1,6 @@
 // Dependencies
 import { useToast } from '@chakra-ui/react';
-import { Box, CircularProgress, Paper, Typography, IconButton, TextField, useTheme, CardContent, Card } from '@mui/material';
+import { Box, CircularProgress, Paper, Typography, IconButton, TextField, useTheme, CardContent, Card, Select, MenuItem } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
 import { Lock, LockOpen } from '@mui/icons-material';
@@ -17,6 +17,34 @@ export type VisionData = {
     updated_at: String;
     updated_by: number;
 };
+
+const visionOptions = [
+    '6/6',
+    '6/6 - P',
+    '6/9',
+    '6/9 - P',
+    '6/12',
+    '6/12 - P',
+    '6/18',
+    '6/18 - P',
+    '6/24',
+    '6/24 - P',
+    '6/36',
+    '6/36 - P',
+    '6/60',
+    '6/60 - P',
+    'CF@5m',
+    'CF@4m',
+    'CF@3m',
+    'CF@2m',
+    'CF@1m',
+    'CF@0.5m',
+    'CF CF',
+    'HM+',
+    'PL+ PR-',
+    'PL- PR+',
+    'No PL',
+];
 
 const PatientVision: React.FC<{
     patient_id: number;
@@ -37,6 +65,7 @@ const PatientVision: React.FC<{
         try {
             setIsLoading(true);
             const data: VisionData = await invoke('get_vision_data', { query: { patient_id: patient_id, side: side, value_type: value_type } });
+            console.log('data: ', data);
             setNearVision(data.near_vision);
             setDistantVision(data.distant_vision);
             setVisionData(data);
@@ -104,6 +133,8 @@ const PatientVision: React.FC<{
                         boxShadow: 3,
                         marginTop: '2rem',
                         border: '0.5px solid black',
+                        minHeight: '13rem',
+                        maxHeight: '13rem',
                     }}
                 >
                     <CardContent sx={{ p: 2 }}>
@@ -137,23 +168,27 @@ const PatientVision: React.FC<{
                                         {nearVision}
                                     </Typography>
                                 ) : (
-                                    <TextField
+                                    <Select
                                         value={nearVision}
                                         onChange={(e) => setNearVision(e.target.value)}
-                                        variant='standard'
                                         fullWidth
-                                        InputProps={{
-                                            disableUnderline: true,
-                                            sx: {
-                                                textAlign: 'center',
-                                                fontSize: '1rem',
-                                                fontWeight: 500,
-                                                bgcolor: 'action.hover',
-                                                borderRadius: 1,
-                                                p: 0.5,
+                                        displayEmpty
+                                        sx={{ bgcolor: 'action.hover', borderRadius: 1, maxHeight: '1.5rem' }}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 200,
+                                                    overflow: 'auto',
+                                                },
                                             },
                                         }}
-                                    />
+                                    >
+                                        {visionOptions.map((option) => (
+                                            <MenuItem key={option} value={option}>
+                                                {option}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
                                 )}
                             </Box>
 
@@ -167,23 +202,27 @@ const PatientVision: React.FC<{
                                         {distantVision}
                                     </Typography>
                                 ) : (
-                                    <TextField
+                                    <Select
                                         value={distantVision}
                                         onChange={(e) => setDistantVision(e.target.value)}
-                                        variant='standard'
                                         fullWidth
-                                        InputProps={{
-                                            disableUnderline: true,
-                                            sx: {
-                                                textAlign: 'center',
-                                                fontSize: '1rem',
-                                                fontWeight: 500,
-                                                bgcolor: 'action.hover',
-                                                borderRadius: 1,
-                                                p: 0.5,
+                                        displayEmpty
+                                        sx={{ bgcolor: 'action.hover', borderRadius: 1, maxHeight: '1.5rem' }}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 200,
+                                                    overflow: 'auto',
+                                                },
                                             },
                                         }}
-                                    />
+                                    >
+                                        {visionOptions.map((option) => (
+                                            <MenuItem key={option} value={option}>
+                                                {option}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
                                 )}
                             </Box>
 
@@ -207,7 +246,15 @@ const PatientVision: React.FC<{
                                               hour: '2-digit',
                                               minute: '2-digit',
                                           })
-                                        : 'N/A'}
+                                        : visionData.created_at
+                                          ? new Date(visionData.created_at.toString()).toLocaleString('en-GB', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: '2-digit',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })
+                                          : 'N/A'}
                                 </Typography>
                             )}
                         </Box>

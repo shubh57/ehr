@@ -46,11 +46,12 @@ pub async fn create_refraction_table(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx:
             axis BYTEA,
             side VARCHAR(10) CHECK (side IN ('LEFT', 'RIGHT')) NOT NULL,
             value_type VARCHAR(10) CHECK (value_type IN ('DL', 'UD')) NOT NULL,
+            vision_type VARCHAR(10) CHECK (vision_type IN ('DV', 'NV')) NOT NULL,
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
             created_by INT REFERENCES users(user_id) ON DELETE CASCADE, 
             updated_at TIMESTAMPTZ DEFAULT NULL,
             updated_by INT REFERENCES users(user_id) ON DELETE CASCADE DEFAULT NULL,
-            CONSTRAINT unique_patient_refraction UNIQUE (patient_id, side, value_type)
+            CONSTRAINT unique_patient_refraction UNIQUE (patient_id, side, value_type, vision_type)
         );
     "#;
     pool.execute(refraction_query).await?;
@@ -117,17 +118,19 @@ pub async fn fill_refraction_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sq
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
     let refraction_fill_query = format!(r#"
-        INSERT INTO refraction (patient_id, spherical, cylindrical, axis, side, value_type, created_by)
+        INSERT INTO refraction (patient_id, spherical, cylindrical, axis, side, value_type, vision_type, created_by)
         VALUES
-        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('180', '{key}'), 'LEFT', 'DL', 2),
-        (1, pgp_sym_encrypt('-1.25', '{key}'), pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('170', '{key}'), 'RIGHT', 'DL', 2),
-        (1, pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('160', '{key}'), 'LEFT', 'UD', 2),
-        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.25', '{key}'), pgp_sym_encrypt('150', '{key}'), 'RIGHT', 'UD', 2),
+        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('180', '{key}'), 'LEFT', 'DL', 'DV', 2),
+        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('180', '{key}'), 'LEFT', 'DL', 'NV', 2),
 
-        (2, pgp_sym_encrypt('-2.00', '{key}'), pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('140', '{key}'), 'LEFT', 'DL', 2),
-        (2, pgp_sym_encrypt('-2.50', '{key}'), pgp_sym_encrypt('-1.25', '{key}'), pgp_sym_encrypt('130', '{key}'), 'RIGHT', 'DL', 2),
-        (2, pgp_sym_encrypt('-1.50', '{key}'), pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('120', '{key}'), 'LEFT', 'UD', 2),
-        (2, pgp_sym_encrypt('-1.75', '{key}'), pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('110', '{key}'), 'RIGHT', 'UD', 2);
+        (1, pgp_sym_encrypt('-1.25', '{key}'), pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('170', '{key}'), 'RIGHT', 'DL', 'DV', 2),
+        (1, pgp_sym_encrypt('-1.25', '{key}'), pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('170', '{key}'), 'RIGHT', 'DL', 'NV', 2),
+
+        (1, pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('160', '{key}'), 'LEFT', 'UD', 'DV', 2),
+        (1, pgp_sym_encrypt('-0.75', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('160', '{key}'), 'LEFT', 'UD', 'NV', 2),
+
+        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.25', '{key}'), pgp_sym_encrypt('150', '{key}'), 'RIGHT', 'UD', 'DV', 2),
+        (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.25', '{key}'), pgp_sym_encrypt('150', '{key}'), 'RIGHT', 'UD', 'NV', 2);
     "#, key = encryption_key);
     pool.execute(&*refraction_fill_query).await?;
     Ok(())

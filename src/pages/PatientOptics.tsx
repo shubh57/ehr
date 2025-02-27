@@ -2,7 +2,23 @@
 
 // Dependencies
 import { ArrowBack } from '@mui/icons-material';
-import { Avatar, Box, Chip, CircularProgress, ListItemAvatar, Typography, useTheme, Paper, CardContent, TextField, Button } from '@mui/material';
+import {
+    Avatar,
+    Box,
+    Chip,
+    CircularProgress,
+    ListItemAvatar,
+    Typography,
+    useTheme,
+    Paper,
+    CardContent,
+    TextField,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+} from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Patient } from './ConsultantPage';
@@ -13,6 +29,8 @@ import PatientRefraction from '../components/optics/PatientRefraction';
 import ConsoleBox from '../components/optics/ConsoleBox';
 import ChiefComplaints from '../components/optics/ChiefComplaints';
 import EyeMeasurement from '../components/optics/EyeMeasurement';
+import { Document, Page, Text, View, StyleSheet, PDFViewer, PDFDownloadLink, Font } from '@react-pdf/renderer';
+import PrescriptionDocument from '../components/optics/PrescriptionDocument';
 
 const PatientOptics: React.FC = () => {
     const { patient_id } = useParams();
@@ -24,6 +42,7 @@ const PatientOptics: React.FC = () => {
 
     const [patientData, setPatientData] = useState<Patient>();
     const [patientDataLoading, setPatientDataLoading] = useState<boolean>(false);
+    const [prescriptionDialogOpen, setPrescriptionDialogOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const handleWheel = (e: any) => {
@@ -97,6 +116,14 @@ const PatientOptics: React.FC = () => {
             return age - 1;
         }
         return age;
+    };
+
+    const handlePrescriptionClick = () => {
+        setPrescriptionDialogOpen(true);
+    };
+
+    const handleClosePrescriptionDialog = () => {
+        setPrescriptionDialogOpen(false);
     };
 
     useEffect(() => {
@@ -204,10 +231,25 @@ const PatientOptics: React.FC = () => {
                     )}
                     <Button
                         variant='contained'
-                        onClick={() => navigate(`/canvas`)}
+                        onClick={() => navigate(`/optics_canvas/${patientId}`)}
                         sx={{ alignSelf: 'flex-start', marginTop: '8px', backgroundColor: theme.palette.common.black, color: theme.palette.common.white }}
                     >
                         Canvas
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={handlePrescriptionClick}
+                        sx={{
+                            alignSelf: 'flex-start',
+                            marginTop: '8px',
+                            backgroundColor: '#4caf50',
+                            '&:hover': {
+                                backgroundColor: '#388e3c',
+                            },
+                        }}
+                    >
+                        Glass Prescription
                     </Button>
                 </Box>
             </Box>
@@ -509,6 +551,42 @@ const PatientOptics: React.FC = () => {
                     }}
                 ></Box>
             </Box>
+
+            {/* Prescription Dialog */}
+            <Dialog open={prescriptionDialogOpen} onClose={handleClosePrescriptionDialog} aria-labelledby='prescription-dialog-title' maxWidth='md' fullWidth>
+                <DialogTitle id='prescription-dialog-title'>Glass Prescription</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ height: 600 }}>
+                        <PDFViewer width='100%' height='100%' style={{ border: 'none' }}>
+                            <PrescriptionDocument patient_id={patientId} />
+                        </PDFViewer>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={handleClosePrescriptionDialog}
+                        variant='contained'
+                        sx={{
+                            backgroundColor: theme.palette.background.paperDark,
+                        }}
+                    >
+                        Close
+                    </Button>
+                    <PDFDownloadLink
+                        document={<PrescriptionDocument patient_id={patientId} />}
+                        fileName={`glass_prescription_${patientData?.mr_number || 'patient'}.pdf`}
+                        style={{
+                            textDecoration: 'none',
+                        }}
+                    >
+                        {({ blob, url, loading, error }) => (
+                            <Button variant='contained' color='primary' disabled={loading}>
+                                {loading ? 'Preparing document...' : 'Download PDF'}
+                            </Button>
+                        )}
+                    </PDFDownloadLink>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
