@@ -9,12 +9,21 @@ use tauri::State;
 // Dependencies
 use crate::db::DatabaseState;
 
-// Sturct to store input for get apis
+// Sturct to store input for get_vision_data
 #[derive(Serialize, Deserialize)]
 pub struct VisionQuery {
     patient_id: i32,
     side: String,
     value_type: String
+}
+
+// Struct to store input for get_refraction_data
+#[derive(Serialize, Deserialize)]
+pub struct RefractionQuery {
+    patient_id: i32,
+    side: String,
+    value_type: String,
+    vision_type: String
 }
 
 // Struct to store result of get_vision_data
@@ -42,6 +51,7 @@ pub struct RefractionData {
     pub axis: Option<String>,
     pub side: String,
     pub value_type: String,
+    pub vision_type: String,
     pub created_at: Option<DateTime<Utc>>,
     pub created_by: Option<i32>,
     pub updated_at: Option<DateTime<Utc>>,
@@ -126,7 +136,7 @@ pub async fn get_vision_data(state: tauri::State<'_, DatabaseState>, query: Visi
 
 // Endpoint to get refraction data for a paritcular patient
 #[tauri::command]
-pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: VisionQuery) -> Result<Option<RefractionData>, String> {
+pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: RefractionQuery) -> Result<Option<RefractionData>, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -143,6 +153,10 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
         return  Err(format!("Invalid refraction type"));
     }
 
+    if query.vision_type != "DV" && query.vision_type != "NV" {
+        return Err(format!("Invalid vision type"));
+    }
+
     match sqlx::query_as!(
         RefractionData, 
         r#"
@@ -154,6 +168,7 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
             pgp_sym_decrypt(axis::bytea, $1) as axis,
             side,
             value_type,
+            vision_type,
             created_at,
             created_by,
             updated_at,
@@ -166,11 +181,14 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
             side = $3
         AND
             value_type = $4
+        AND
+            vision_type = $5
         "#,
         &encryption_key,
         &query.patient_id,
         &query.side,
-        &query.value_type
+        &query.value_type,
+        &query.vision_type
     )
     .fetch_all(&*pool)
     .await {
@@ -254,7 +272,7 @@ pub async fn update_vision_data(state: tauri::State<'_, DatabaseState>, patient_
 
 // Endpoint to update refraction data for a patient
 #[tauri::command]
-pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, spherical: String, cylindrical: String, axis: String, side: String, value_type: String, updated_by: i32) -> Result<String, String> {
+pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, spherical: String, cylindrical: String, axis: String, side: String, value_type: String, vision_type: String, updated_by: i32) -> Result<String, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -273,6 +291,7 @@ pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, pati
             axis,
             side,
             value_type,
+            vision_type,
             created_by,
             updated_at,
             updated_by
@@ -285,10 +304,11 @@ pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, pati
             $6,
             $7,
             $8,
+            $9,
             NULL,
             NULL
         )
-        ON CONFLICT (patient_id, side, value_type)
+        ON CONFLICT (patient_id, side, value_type, vision_type)
         DO UPDATE SET
             spherical = EXCLUDED.spherical,
             cylindrical = EXCLUDED.cylindrical,
@@ -303,6 +323,7 @@ pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, pati
             pgp_sym_decrypt(axis::bytea, $3) as axis,
             side, 
             value_type, 
+            vision_type,
             created_at, 
             created_by, 
             updated_at, 
@@ -315,6 +336,7 @@ pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, pati
         &axis,
         &side,
         &value_type,
+        &vision_type,
         &updated_by
     )
     .fetch_one(&*pool)

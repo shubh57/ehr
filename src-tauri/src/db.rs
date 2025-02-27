@@ -30,6 +30,7 @@ pub async fn delete_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()
     let drop_query = r#"
         DROP TABLE IF EXISTS patient_history;
         DROP TABLE IF EXISTS patient_activity;
+        DROP TABLE IF EXISTS eye_measurement;
         DROP TABLE IF EXISTS vision;
         DROP TABLE IF EXISTS refraction;
         DROP TABLE IF EXISTS procedures;

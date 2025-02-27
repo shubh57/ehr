@@ -1,4 +1,4 @@
-import { Box, Typography, Slider, Button, Paper, Grid } from '@mui/material';
+import { Box, Typography, Slider, Button, Paper } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile, BaseDirectory, readFile, create, mkdir } from '@tauri-apps/plugin-fs';
@@ -30,8 +30,8 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
     const debounce = (func: Function, delay: number) => {
         let timeoutId: ReturnType<typeof setTimeout>;
         return (...args: any[]) => {
-          clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => func(...args), delay);
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func(...args), delay);
         };
     };
 
@@ -56,13 +56,13 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
         const canvas = canvasRef.current;
         if (canvas) {
             const dataUrl = canvas.toDataURL('image/png');
-            const fileName = "canvas.png";
+            const fileName = 'canvas.png';
 
             const blob = await fetch(dataUrl).then((res) => res.blob());
             const arrayBuffer = await blob.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
 
-            await writeFile(fileName, uint8Array, {baseDir: BaseDirectory.AppLocalData});
+            await writeFile(fileName, uint8Array, { baseDir: BaseDirectory.AppLocalData });
         }
     };
 
@@ -72,14 +72,14 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
         const len = binaryString.length;
         const bytes = new Uint8Array(len);
         for (let i = 0; i < len; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+            bytes[i] = binaryString.charCodeAt(i);
         }
         return bytes;
     };
 
     const autoSave = async () => {
         const canvas = canvasRef.current;
-        if (!canvas)    return;
+        if (!canvas) return;
         const dataUrl = canvas.toDataURL('image/png');
         const uint8Array = dataUrlToUint8Array(dataUrl);
 
@@ -88,18 +88,18 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
 
         const dirExsits = await exists(dirPath);
         if (!dirExsits) {
-            await mkdir(dirPath, { recursive: true});
+            await mkdir(dirPath, { recursive: true });
         }
 
         await writeFile(filePath, uint8Array);
         // await writeFile("autosave.png", uint8Array, {baseDir: BaseDirectory.AppLocalData});
-        
+
         toast({
             title: 'autosaved canvas',
             status: 'success',
             duration: 4000,
             position: 'top',
-            isClosable: true
+            isClosable: true,
         });
     };
 
@@ -107,7 +107,7 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
 
     const loadSavedCanvas = async () => {
         try {
-            const fileContent = await readFile("autosave.png", {baseDir: BaseDirectory.AppLocalData});
+            const fileContent = await readFile('autosave.png', { baseDir: BaseDirectory.AppLocalData });
 
             const img = new Image();
             img.onload = () => {
@@ -116,12 +116,12 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
                     const context = canvas.getContext('2d');
                     context?.drawImage(img, 0, 0);
                 }
-            }
+            };
 
-            const blob = new Blob([fileContent], {type: 'image/png'});
+            const blob = new Blob([fileContent], { type: 'image/png' });
             img.src = URL.createObjectURL(blob);
         } catch (error) {
-            console.error("Error while loading saved canvas: ", error);
+            console.error('Error while loading saved canvas: ', error);
         }
     };
 
@@ -240,23 +240,21 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
             }}
         >
             {/* Controls Panel */}
-            <Paper elevation={3} sx={{ padding: 2, margin: 2 }}>
-                <Grid container spacing={2} alignItems='center'>
-                    <Grid item xs={12} md={3}>
-                        <ArrowBack onClick={() => navigate(`/`)} />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <Typography variant='h6'>Canvas</Typography>
-                    </Grid>
-                    <Grid item xs={12} md={3}>
+            <Paper elevation={3} sx={{ padding: 2, margin: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{
+                    display: 'flex',
+                    width: '100%',
+                    justifyContent: 'space-between'
+                }}>
+                    <Box>
                         {!eraseMode && (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Typography sx={{ mr: 1 }}>Color:</Typography>
                                 <input type='color' value={color} onChange={(e) => setColor(e.target.value)} style={{ border: 'none', background: 'none' }} />
                             </Box>
                         )}
-                    </Grid>
-                    <Grid item xs={12} md={3}>
+                    </Box>
+                    <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography sx={{ mr: 1 }}>Mode:</Typography>
                             <Button variant={eraseMode ? 'outlined' : 'contained'} onClick={() => setEraseMode(false)} sx={{ mr: 1 }}>
@@ -266,8 +264,8 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
                                 Eraser
                             </Button>
                         </Box>
-                    </Grid>
-                    <Grid item xs={12} md={3}>
+                    </Box>
+                    <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             {!eraseMode ? (
                                 <>
@@ -295,15 +293,15 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
                                 </>
                             )}
                         </Box>
-                    </Grid>
-                    {/* <Grid item xs={12}>
+                    </Box>
+                    {/* <Box item xs={12}>
                         <Box sx={{ textAlign: 'center' }}>
                             <Button variant='contained' onClick={exportCanvas}>
                                 Export as Image
                             </Button>
                         </Box>
-                    </Grid> */}
-                </Grid>
+                    </Box> */}
+                </Box>
             </Paper>
 
             {/* Canvas Container */}
