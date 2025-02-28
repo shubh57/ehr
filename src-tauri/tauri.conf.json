@@ -33,6 +33,7 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "icon": [
@@ -57,5 +58,15 @@
     }
   },
   "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJDQzNEODczMUFGMDk2MzYKUldRMmx2QWFjOWpETEQ3OXJXYVEwRWVTZFRmVUtMcjlrdW1ScFVqQXQ1OWJ1RmsvNjVxNCs3YjUK",
+      "endpoints": [
+        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}",
+        "https://github.com/user/repo/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

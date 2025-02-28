@@ -91,7 +91,8 @@ pub async fn create_eye_measurement_table(pool: &sqlx::Pool<sqlx::Postgres>) -> 
 pub async fn fill_vision_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
-    let vision_fill_query = format!(r#"
+    let vision_fill_query = format!(
+        r#"
         INSERT INTO vision (patient_id, near_vision, distant_vision, side, value_type, created_by)
         VALUES
         (1, pgp_sym_encrypt('20/20', '{key}'), pgp_sym_encrypt('20/40', '{key}'), 'LEFT', 'UC', 2),
@@ -107,7 +108,9 @@ pub async fn fill_vision_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::
         (2, pgp_sym_encrypt('20/30', '{key}'), pgp_sym_encrypt('20/40', '{key}'), 'RIGHT', 'BCVA', 2),
         (2, pgp_sym_encrypt('20/35', '{key}'), pgp_sym_encrypt('20/50', '{key}'), 'LEFT', 'PH', 2),
         (2, pgp_sym_encrypt('20/40', '{key}'), pgp_sym_encrypt('20/45', '{key}'), 'RIGHT', 'PH', 2);
-    "#, key = encryption_key);
+    "#,
+        key = encryption_key
+    );
 
     pool.execute(&*vision_fill_query).await?;
     Ok(())
@@ -117,7 +120,8 @@ pub async fn fill_vision_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::
 pub async fn fill_refraction_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
-    let refraction_fill_query = format!(r#"
+    let refraction_fill_query = format!(
+        r#"
         INSERT INTO refraction (patient_id, spherical, cylindrical, axis, side, value_type, vision_type, created_by)
         VALUES
         (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.50', '{key}'), pgp_sym_encrypt('180', '{key}'), 'LEFT', 'DL', 'DV', 2),
@@ -131,16 +135,21 @@ pub async fn fill_refraction_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sq
 
         (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.25', '{key}'), pgp_sym_encrypt('150', '{key}'), 'RIGHT', 'UD', 'DV', 2),
         (1, pgp_sym_encrypt('-1.00', '{key}'), pgp_sym_encrypt('-0.25', '{key}'), pgp_sym_encrypt('150', '{key}'), 'RIGHT', 'UD', 'NV', 2);
-    "#, key = encryption_key);
+    "#,
+        key = encryption_key
+    );
     pool.execute(&*refraction_fill_query).await?;
     Ok(())
 }
 
 // Function to fill dummy data in eye_measurement table
-pub async fn fill_eye_measurement_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
+pub async fn fill_eye_measurement_dummy_data(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+) -> sqlx::Result<()> {
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
-    let eye_measurement_fill_query = format!(r#"
+    let eye_measurement_fill_query = format!(
+        r#"
         INSERT INTO eye_measurement (patient_id, iop_at, iop_nct, cct, tond, side, created_by)
         VALUES
         (1, pgp_sym_encrypt('14', '{key}'), pgp_sym_encrypt('16', '{key}'), pgp_sym_encrypt('520', '{key}'), pgp_sym_encrypt('0.3', '{key}'), 'LEFT', 2),
@@ -148,14 +157,19 @@ pub async fn fill_eye_measurement_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) 
         
         (2, pgp_sym_encrypt('13', '{key}'), pgp_sym_encrypt('18', '{key}'), pgp_sym_encrypt('510', '{key}'), pgp_sym_encrypt('0.4', '{key}'), 'LEFT', 2),
         (2, pgp_sym_encrypt('14.5', '{key}'), pgp_sym_encrypt('19', '{key}'), pgp_sym_encrypt('525', '{key}'), pgp_sym_encrypt('0.35', '{key}'), 'RIGHT', 2);
-    "#, key = encryption_key);
+    "#,
+        key = encryption_key
+    );
 
     pool.execute(&*eye_measurement_fill_query).await?;
     Ok(())
 }
 
 // Function to setup all vision related tables
-pub async fn setup_vision_tables(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bool) -> sqlx::Result<()> {
+pub async fn setup_vision_tables(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    dummy_data: bool,
+) -> sqlx::Result<()> {
     create_vision_table(pool).await?;
     create_refraction_table(pool).await?;
     create_eye_measurement_table(pool).await?;

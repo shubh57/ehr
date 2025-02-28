@@ -3,8 +3,8 @@
 
 use dotenv::dotenv;
 
-mod patients;
 mod db;
+mod patients;
 
 fn main() {
     // Initialize panic handler for better error reporting
@@ -16,13 +16,13 @@ fn main() {
         if let Err(err) = dotenv::from_filename(".env.development") {
             eprintln!("Error while loading env: {}", err);
             std::process::exit(1);
-        } 
+        }
     } else {
         if let Err(err) = dotenv::from_filename(".env.production") {
             std::env::set_var("DATABASE_URL", "postgres://postgres:z0ayBKl4ZOYvhAgzmwyj@ehrportal.clckceueo5iv.ap-south-1.rds.amazonaws.com:5432/ehrportal");
             std::env::set_var("ENCRYPTION_KEY", "qDFwNcXiGD3XPjfzFzfpUvh0FW10qHzf");
             eprintln!("Error while loading env: {}", err);
-        } 
+        }
     }
 
     ehrportal_lib::run()
