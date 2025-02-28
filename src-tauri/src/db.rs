@@ -1,10 +1,10 @@
 // src-tauri/src/db.rs
 
 // Dependancies
+use sqlx::postgres::PgPool;
 use sqlx::{pool, postgres::PgPoolOptions, Executor};
 use std::{env, sync::Arc};
 use tokio::sync::Mutex;
-use sqlx::postgres::PgPool;
 
 // Struct for storing pool globally in the state
 pub struct DatabaseState {
@@ -19,13 +19,12 @@ pub async fn connect_to_database() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
         .test_before_acquire(true)
         .connect(&database_url)
         .await?;
-    
+
     Ok(pool)
 }
 
 // Function to delete all tables in db
 pub async fn delete_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
-
     // Dropping existing tables which might cause conflict
     let drop_query = r#"
         DROP TABLE IF EXISTS patient_history;
@@ -194,7 +193,8 @@ pub async fn fill_procedures_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sq
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
     // Query to fill procedures table with dummy values
-    let procedures_fill_query = format!(r#"
+    let procedures_fill_query = format!(
+        r#"
         INSERT INTO procedures (
             procedure_name, description
         )
@@ -211,20 +211,29 @@ pub async fn fill_procedures_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sq
             pgp_sym_encrypt('X-Ray', '{}'),
             pgp_sym_encrypt('Diagnostic imaging of specified body part', '{}')
         );
-    "#, 
-    encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key);
+    "#,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key
+    );
     pool.execute(&*procedures_fill_query).await?;
 
     Ok(())
 }
 
 // Function to fill dummy data in patient_activity table
-pub async fn fill_patient_activity_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
+pub async fn fill_patient_activity_dummy_data(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+) -> sqlx::Result<()> {
     // Getting encryption key needed to encrypt patient's data
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
     // Query to fill patient_activity table with dummy values
-    let patient_activity_fill_query = format!(r#"
+    let patient_activity_fill_query = format!(
+        r#"
         INSERT INTO patient_activity (
             patient_id, status, procedure_id, doctor_id, doctors_note, activity_time, patient_complaint
         )
@@ -256,20 +265,29 @@ pub async fn fill_patient_activity_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>)
             '2025-01-21 11:45:00+00',
             pgp_sym_encrypt('Patient complains of persistent cough and chest pain.', '{}')
         );
-    "#, 
-    encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key);
+    "#,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key
+    );
     pool.execute(&*patient_activity_fill_query).await?;
 
     Ok(())
 }
 
 // Function to fill dummy data in patient_history table
-pub async fn fill_patient_history_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
+pub async fn fill_patient_history_dummy_data(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+) -> sqlx::Result<()> {
     // Getting encryption key needed to encrypt patient's data
     let encryption_key = env::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY is required.");
 
     // Query to fill patient_history table with dummy values
-    let patient_history_fill_query = format!(r#"
+    let patient_history_fill_query = format!(
+        r#"
         INSERT INTO patient_history (
             patient_id, medical_conditions, medications, allergies
         )
@@ -286,8 +304,14 @@ pub async fn fill_patient_history_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) 
             pgp_sym_encrypt('["Factor VIII", "Iron supplements", "Folic acid"]', '{}'),
             pgp_sym_encrypt('[]', '{}')
         );
-    "#, 
-    encryption_key, encryption_key, encryption_key, encryption_key, encryption_key, encryption_key);
+    "#,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key,
+        encryption_key
+    );
     pool.execute(&*patient_history_fill_query).await?;
 
     Ok(())
@@ -310,9 +334,12 @@ pub async fn fill_users_dummy_data(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::R
 }
 
 // Single function to setup entire database
-pub async fn setup_complete_database(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bool) -> sqlx::Result<()> {
+pub async fn setup_complete_database(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    dummy_data: bool,
+) -> sqlx::Result<()> {
     delete_tables(pool).await?;
-    
+
     setup_users_table(pool).await?;
     setup_patients_table(pool).await?;
     setup_procedures_table(pool).await?;

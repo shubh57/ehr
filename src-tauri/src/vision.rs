@@ -14,7 +14,7 @@ use crate::db::DatabaseState;
 pub struct VisionQuery {
     patient_id: i32,
     side: String,
-    value_type: String
+    value_type: String,
 }
 
 // Struct to store input for get_refraction_data
@@ -23,7 +23,7 @@ pub struct RefractionQuery {
     patient_id: i32,
     side: String,
     value_type: String,
-    vision_type: String
+    vision_type: String,
 }
 
 // Struct to store result of get_vision_data
@@ -38,7 +38,7 @@ pub struct VisionData {
     pub created_at: Option<DateTime<Utc>>,
     pub created_by: Option<i32>,
     pub updated_at: Option<DateTime<Utc>>,
-    pub updated_by: Option<i32>
+    pub updated_by: Option<i32>,
 }
 
 // Struct to store patient refraction data
@@ -55,7 +55,7 @@ pub struct RefractionData {
     pub created_at: Option<DateTime<Utc>>,
     pub created_by: Option<i32>,
     pub updated_at: Option<DateTime<Utc>>,
-    pub updated_by: Option<i32>
+    pub updated_by: Option<i32>,
 }
 
 // Struct to store patient eye measurements
@@ -71,12 +71,15 @@ pub struct EyeMeasurementData {
     created_at: Option<DateTime<Utc>>,
     created_by: Option<i32>,
     updated_at: Option<DateTime<Utc>>,
-    updated_by: Option<i32>
+    updated_by: Option<i32>,
 }
 
 // Endpoint to get uncorrected vision values for a patient
 #[tauri::command]
-pub async fn get_vision_data(state: tauri::State<'_, DatabaseState>, query: VisionQuery) -> Result<Option<VisionData>, String> {
+pub async fn get_vision_data(
+    state: tauri::State<'_, DatabaseState>,
+    query: VisionQuery,
+) -> Result<Option<VisionData>, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -90,7 +93,7 @@ pub async fn get_vision_data(state: tauri::State<'_, DatabaseState>, query: Visi
     }
 
     if query.value_type != "UC" && query.value_type != "BCVA" && query.value_type != "PH" {
-        return  Err(format!("Invalid vision type"));
+        return Err(format!("Invalid vision type"));
     }
 
     match sqlx::query_as!(
@@ -122,21 +125,28 @@ pub async fn get_vision_data(state: tauri::State<'_, DatabaseState>, query: Visi
         &query.value_type
     )
     .fetch_all(&*pool)
-    .await {
+    .await
+    {
         Ok(vision_data) => {
             if vision_data.len() == 1 {
                 Ok(Some(vision_data[0].clone()))
             } else {
                 Ok(None)
             }
-        },
-        Err(err) => Err(format!("Error while fetching uncorrected vision values: {}", err))
+        }
+        Err(err) => Err(format!(
+            "Error while fetching uncorrected vision values: {}",
+            err
+        )),
     }
 }
 
 // Endpoint to get refraction data for a paritcular patient
 #[tauri::command]
-pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: RefractionQuery) -> Result<Option<RefractionData>, String> {
+pub async fn get_refraction_data(
+    state: tauri::State<'_, DatabaseState>,
+    query: RefractionQuery,
+) -> Result<Option<RefractionData>, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -150,7 +160,7 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
     }
 
     if query.value_type != "DL" && query.value_type != "UD" {
-        return  Err(format!("Invalid refraction type"));
+        return Err(format!("Invalid refraction type"));
     }
 
     if query.vision_type != "DV" && query.vision_type != "NV" {
@@ -158,7 +168,7 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
     }
 
     match sqlx::query_as!(
-        RefractionData, 
+        RefractionData,
         r#"
         SELECT 
             refraction_id,
@@ -191,21 +201,30 @@ pub async fn get_refraction_data(state: tauri::State<'_, DatabaseState>, query: 
         &query.vision_type
     )
     .fetch_all(&*pool)
-    .await {
+    .await
+    {
         Ok(refraction_data) => {
             if refraction_data.len() == 1 {
                 Ok(Some(refraction_data[0].clone()))
             } else {
                 Ok(None)
             }
-        }, 
-        Err(err) => Err(format!("Error while fetching refraction data: {}", err))
+        }
+        Err(err) => Err(format!("Error while fetching refraction data: {}", err)),
     }
 }
 
 // Endpoint to update vision data for a patient
 #[tauri::command]
-pub async fn update_vision_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, near_vision: String, distant_vision: String, side: String, value_type: String, updated_by: i32) -> Result<String, String> {
+pub async fn update_vision_data(
+    state: tauri::State<'_, DatabaseState>,
+    patient_id: i32,
+    near_vision: String,
+    distant_vision: String,
+    side: String,
+    value_type: String,
+    updated_by: i32,
+) -> Result<String, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -264,15 +283,26 @@ pub async fn update_vision_data(state: tauri::State<'_, DatabaseState>, patient_
         &updated_by
     )
     .fetch_one(&*pool)
-    .await {
+    .await
+    {
         Ok(record) => Ok(format!("Successfully updated vision data")),
-        Err(err) => Err(format!("Error while updating vision data: {}", err))
+        Err(err) => Err(format!("Error while updating vision data: {}", err)),
     }
 }
 
 // Endpoint to update refraction data for a patient
 #[tauri::command]
-pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, spherical: String, cylindrical: String, axis: String, side: String, value_type: String, vision_type: String, updated_by: i32) -> Result<String, String> {
+pub async fn update_refraction_data(
+    state: tauri::State<'_, DatabaseState>,
+    patient_id: i32,
+    spherical: String,
+    cylindrical: String,
+    axis: String,
+    side: String,
+    value_type: String,
+    vision_type: String,
+    updated_by: i32,
+) -> Result<String, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -340,15 +370,20 @@ pub async fn update_refraction_data(state: tauri::State<'_, DatabaseState>, pati
         &updated_by
     )
     .fetch_one(&*pool)
-    .await {
+    .await
+    {
         Ok(record) => Ok(format!("Successfully updated refraction data")),
-        Err(err) => Err(format!("Error while updating refraction data: {}", err))
+        Err(err) => Err(format!("Error while updating refraction data: {}", err)),
     }
 }
 
 // Endpoint to get eye measurement data for a patient
 #[tauri::command]
-pub async fn get_patient_eye_measurement_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, side: String) -> Result<Option<EyeMeasurementData>, String> {
+pub async fn get_patient_eye_measurement_data(
+    state: tauri::State<'_, DatabaseState>,
+    patient_id: i32,
+    side: String,
+) -> Result<Option<EyeMeasurementData>, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -384,21 +419,34 @@ pub async fn get_patient_eye_measurement_data(state: tauri::State<'_, DatabaseSt
         &side
     )
     .fetch_all(&*pool)
-    .await {
+    .await
+    {
         Ok(data) => {
             if data.len() != 1 {
                 Ok(None)
             } else {
                 Ok(Some(data[0].clone()))
             }
-        },
-        Err(err) => Err(format!("Error while fetching patient eye measurement data: {}", err))
+        }
+        Err(err) => Err(format!(
+            "Error while fetching patient eye measurement data: {}",
+            err
+        )),
     }
 }
 
 // Endpoint to update patient eye measurement data
 #[tauri::command]
-pub async fn update_patient_eye_measurement_data(state: tauri::State<'_, DatabaseState>, patient_id: i32, iop_at: String, iop_nct: String, cct: String, tond: String, side: String, updated_by: i32) -> Result<EyeMeasurementData, String> {
+pub async fn update_patient_eye_measurement_data(
+    state: tauri::State<'_, DatabaseState>,
+    patient_id: i32,
+    iop_at: String,
+    iop_nct: String,
+    cct: String,
+    tond: String,
+    side: String,
+    updated_by: i32,
+) -> Result<EyeMeasurementData, String> {
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
@@ -463,14 +511,18 @@ pub async fn update_patient_eye_measurement_data(state: tauri::State<'_, Databas
         &updated_by
     )
     .fetch_all(&*pool)
-    .await {
+    .await
+    {
         Ok(data) => {
             if data.len() == 0 {
                 Err(format!("Error while updating records"))
             } else {
                 Ok(data[0].clone())
             }
-        }, 
-        Err(err) => Err(format!("Error while updating patient eye measurement data: {}", err))
+        }
+        Err(err) => Err(format!(
+            "Error while updating patient eye measurement data: {}",
+            err
+        )),
     }
 }
