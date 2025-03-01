@@ -5,6 +5,10 @@ on:
     branches:
       - release
 
+permissions:
+  contents: write
+  releases: write
+
 # This workflow will trigger on each push to the `release` branch to create or update a GitHub release, build your app, and upload the artifacts to the release.
 
 jobs:
