@@ -50,14 +50,6 @@ jobs:
       - name: install frontend dependencies
         run: npm install # change this to npm, pnpm or bun depending on which one you use.
 
-      - name: Bump version and create tag
-        id: versioning
-        run: |
-          npx standard-version --release-as patch
-          git push --follow-tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,3 +63,16 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
           includeUpdaterJson: true 
+      
+      - name: create release in public github repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG='App v__VERSION__'
+          RELEASE_TITLE="Release $RELEASE_TAG"
+          RELEASE_BODY="See the attached assets for installation details."
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag_name\": \"${RELEASE_TAG}\", \"name\": \"${RELEASE_TITLE}\", \"body\": \"${RELEASE_BODY}\", \"draft\": true, \"prerelease\": false}" \
+            https://api.github.com/repos/Shubh-81/EHRPortalReleases/releases
