@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { Box, Typography, Paper, Grid, useTheme } from '@mui/material';
+// src/pages/ConsultantPage.tsx
+
+// Dependencies
+import { Box, Typography, useTheme } from '@mui/material';
 import Appointments from '../components/Appointments';
-import { useNavigate } from 'react-router-dom';
 import PatientList from '../components/PatientList';
+import { useState } from 'react';
+import UpdateComponent from '../components/UpdateComponent';
 
 export type Patient = {
     patient_id: number;
@@ -18,6 +20,8 @@ export type Patient = {
 
 const ConsultantPage = () => {
     const theme = useTheme();
+    
+    const [update, setUpdate] = useState<any>(null);
 
     return (
         <Box
@@ -31,6 +35,7 @@ const ConsultantPage = () => {
                 width: '100%',
             }}
         >
+            <UpdateComponent/>
             <Box
                 sx={{
                     display: 'flex',
