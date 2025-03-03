@@ -15,6 +15,7 @@ pub mod db;
 pub mod db_vision;
 pub mod patients;
 pub mod vision;
+pub mod file;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -76,6 +77,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             greet,
+            file::save_pdf_file,
             patients::get_patient_data,
             patients::get_patient_activity_data,
             patients::get_patients_data,

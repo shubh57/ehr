@@ -29,8 +29,9 @@ import PatientRefraction from '../components/optics/PatientRefraction';
 import ConsoleBox from '../components/optics/ConsoleBox';
 import ChiefComplaints from '../components/optics/ChiefComplaints';
 import EyeMeasurement from '../components/optics/EyeMeasurement';
-import { Document, Page, Text, View, StyleSheet, PDFViewer, PDFDownloadLink, Font } from '@react-pdf/renderer';
+import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import PrescriptionDocument from '../components/optics/PrescriptionDocument';
+import { documentDir, downloadDir } from '@tauri-apps/api/path';
 
 const PatientOptics: React.FC = () => {
     const { patient_id } = useParams();
@@ -124,6 +125,44 @@ const PatientOptics: React.FC = () => {
 
     const handleClosePrescriptionDialog = () => {
         setPrescriptionDialogOpen(false);
+    };
+
+    const handleDownloadPdf = async (blob: Blob | null) => {
+        if (!blob) {
+            return;
+        }
+
+        const downloadPath = await downloadDir();
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        let binaryString = "";
+        for (let i = 0; i < uint8Array.length; i++) {
+            binaryString += String.fromCharCode(uint8Array[i]);
+        }
+        const base64String = btoa(binaryString);
+
+        const fileName = `glass_prescription_${patientData?.mr_number || 'patient'}.pdf`;
+
+        try {
+            await invoke ('save_pdf_file', { fileName, base64Data: base64String, downloadPath: downloadPath });
+            toast({
+                title: 'Prescription downloaded successfully.',
+                status: 'success',
+                duration: 4000,
+                isClosable: true,
+                position: 'top',
+            });
+            setPrescriptionDialogOpen(false);
+        } catch (error) {
+            console.error("Error while saving pdf file: ", error);
+            toast({
+                title: 'Error while downloading prescription.',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
     };
 
     useEffect(() => {
@@ -580,7 +619,7 @@ const PatientOptics: React.FC = () => {
                         }}
                     >
                         {({ blob, url, loading, error }) => (
-                            <Button variant='contained' color='primary' disabled={loading}>
+                            <Button variant='contained' color='primary' disabled={loading} onClick={async() => await handleDownloadPdf(blob)}>
                                 {loading ? 'Preparing document...' : 'Download PDF'}
                             </Button>
                         )}
