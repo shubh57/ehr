@@ -13,6 +13,7 @@ const UpdateComponent: React.FC = () => {
     const checkForUpdates = async () => {
         try {
             const update = await check();
+            console.log("update: ", update);
             if (!update) {
                 return;
             }
