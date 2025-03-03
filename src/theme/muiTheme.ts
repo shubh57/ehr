@@ -110,7 +110,7 @@ const palette: PaletteOptions = {
         default: '#BBF7D0',
     },
     paperRed: {
-        default: '#FECACA',
+        default: '#f26f6f',
     },
 };
 

@@ -22,7 +22,7 @@ const ProcedureDetailsModal: React.FC<{
     const theme = useTheme();
     const toast = useToast();
 
-    const [status, setStatus] = useState('PENDING');
+    const [status, setStatus] = useState('TO_BE_REVIEWED');
     const [doctorNote, setDoctorNote] = useState('');
     const [patientComplaint, setPatientComplaint] = useState('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,9 +40,9 @@ const ProcedureDetailsModal: React.FC<{
             await invoke('create_patient_activity', {
                 patientId: patient_id,
                 procedureId: procedure.procedure_id,
-                status: status,
-                doctorsNote: doctorNote,
-                patientComplaint: patientComplaint,
+                status: status || 'TO_BE_REVIEWED',
+                doctorsNote: doctorNote || "",
+                patientComplaint: patientComplaint || "",
                 activityTime: formattedTime,
             });
             toast({
@@ -108,7 +108,7 @@ const ProcedureDetailsModal: React.FC<{
                         <Chip
                             label={'PENDING'}
                             sx={{
-                                backgroundColor: theme.palette.warning.main,
+                                backgroundColor: theme.palette.paperYellow.light,
                                 color: theme.palette.common.black,
                                 fontWeight: 'bold',
                             }}
@@ -118,7 +118,7 @@ const ProcedureDetailsModal: React.FC<{
                         <Chip
                             label={'COMPLETED'}
                             sx={{
-                                backgroundColor: theme.palette.success.main,
+                                backgroundColor: theme.palette.paperGreen.default,
                                 color: theme.palette.common.black,
                                 fontWeight: 'bold',
                             }}
@@ -128,7 +128,7 @@ const ProcedureDetailsModal: React.FC<{
                         <Chip
                             label={'INCOMPLETE'}
                             sx={{
-                                backgroundColor: theme.palette.error.main,
+                                backgroundColor: theme.palette.paperRed.default,
                                 color: theme.palette.common.white,
                                 fontWeight: 'bold',
                             }}

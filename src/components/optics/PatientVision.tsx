@@ -65,7 +65,6 @@ const PatientVision: React.FC<{
         try {
             setIsLoading(true);
             const data: VisionData = await invoke('get_vision_data', { query: { patient_id: patient_id, side: side, value_type: value_type } });
-            console.log('data: ', data);
             setNearVision(data.near_vision);
             setDistantVision(data.distant_vision);
             setVisionData(data);
