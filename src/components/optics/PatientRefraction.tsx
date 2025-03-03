@@ -74,66 +74,58 @@ const PatientRefraction: React.FC<{
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [updateLoading, setUpdateLoading] = useState<boolean>(false);
 
-    const fetchRefractionData = async () => {
+    const fetchRefractionData = async (value_type: string, vision_type: string) => {
         try {
             setIsLoading(true);
 
-            // Fetch Distance Vision data
-            const dataDV: RefractionData = await invoke('get_refraction_data', {
+            // Fetch Refraction data
+            const data: RefractionData = await invoke('get_refraction_data', {
                 query: {
                     patient_id: patient_id,
                     side: side,
-                    value_type: 'UD',
-                    vision_type: 'DV',
+                    value_type: value_type,
+                    vision_type: vision_type,
                 },
             });
 
-            setSphericalDV(dataDV?.spherical || 'N/A');
-            setCylindricalDV(dataDV?.cylindrical || 'N/A');
-            setAxisDV(dataDV?.axis || 'N/A');
-            setRefractionData(dataDV);
+            setRefractionData(data);
 
-            // Fetch Near Vision data
-            const dataNV: RefractionData = await invoke('get_refraction_data', {
-                query: {
-                    patient_id: patient_id,
-                    side: side,
-                    value_type: 'UD',
-                    vision_type: 'NV',
-                },
-            });
-
-            setSphericalNV(dataNV?.spherical || 'N/A');
-            setCylindricalNV(dataNV?.cylindrical || 'N/A');
-            setAxisNV(dataNV?.axis || 'N/A');
-
-            // Fetch Distance Vision data (Dilated)
-            const dilatedDataDV: RefractionData = await invoke('get_refraction_data', {
-                query: {
-                    patient_id: patient_id,
-                    side: side,
-                    value_type: 'DL',
-                    vision_type: 'DV',
-                },
-            });
-
-            setDilatedSphericalDV(dilatedDataDV?.spherical || 'N/A');
-            setDilatedCylindricalDV(dilatedDataDV?.cylindrical || 'N/A');
-            setDilatedAxisDV(dilatedDataDV?.axis || 'N/A');
-
-            // Fetch Near Vision data (Dilated)
-            const dilatedDataNV: RefractionData = await invoke('get_refraction_data', {
-                query: {
-                    patient_id: patient_id,
-                    side: side,
-                    value_type: 'DL',
-                    vision_type: 'NV',
-                },
-            });
-
-            setDilatedSphericalNV(dilatedDataNV?.spherical || 'N/A');
-            setDilatedCylindricalNV(dilatedDataNV?.cylindrical || 'N/A');
-            setDilatedAxisNV(dilatedDataNV?.axis || 'N/A');
+            switch (value_type) {
+                case 'UD': {
+                    switch (vision_type) {
+                        case 'DV': {
+                            setSphericalDV(data?.spherical || 'N/A');
+                            setCylindricalDV(data?.cylindrical || 'N/A');
+                            setAxisDV(data?.axis || 'N/A');    
+                            break;
+                        }
+                        case 'NV': {
+                            setSphericalNV(data?.spherical || 'N/A');
+                            setCylindricalNV(data?.cylindrical || 'N/A');
+                            setAxisNV(data?.axis || 'N/A');
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case 'DL': {
+                    switch (vision_type) {
+                        case 'DV': {
+                            setDilatedSphericalDV(data?.spherical || 'N/A');
+                            setDilatedCylindricalDV(data?.cylindrical || 'N/A');
+                            setDilatedAxisDV(data?.axis || 'N/A');
+                            break;
+                        }
+                        case 'NV': {
+                            setDilatedSphericalNV(data?.spherical || 'N/A');
+                            setDilatedCylindricalNV(data?.cylindrical || 'N/A');
+                            setDilatedAxisNV(data?.axis || 'N/A');
+                            break;
+                        }
+                    }
+                }
+            }
+            
         } catch (error) {
             console.error('Error while fetching refraction data: ', error);
             toast({
@@ -148,7 +140,7 @@ const PatientRefraction: React.FC<{
         }
     };
 
-    const handleRefractionUpdate = async () => {
+    const handleRefractionUpdate = async (value_type: string, vision_type: string) => {
         try {
             setUpdateLoading(true);
 
@@ -159,49 +151,13 @@ const PatientRefraction: React.FC<{
                 cylindrical: cylindricalDV,
                 axis: axisDV,
                 side: side,
-                valueType: 'UD',
-                visionType: 'DV',
-                updatedBy: 1,
-            });
-
-            // Update Near Vision data
-            await invoke('update_refraction_data', {
-                patientId: patient_id,
-                spherical: sphericalNV,
-                cylindrical: cylindricalNV,
-                axis: axisNV,
-                side: side,
-                valueType: 'UD',
-                visionType: 'NV',
-                updatedBy: 1,
-            });
-
-            // Update Distance Vision data
-            await invoke('update_refraction_data', {
-                patientId: patient_id,
-                spherical: dilatedSphericalDV,
-                cylindrical: dilatedCylindricalDV,
-                axis: dilatedAxisDV,
-                side: side,
-                valueType: 'DL',
-                visionType: 'DV',
-                updatedBy: 1,
-            });
-
-            // Update Near Vision data
-            await invoke('update_refraction_data', {
-                patientId: patient_id,
-                spherical: dilatedSphericalNV,
-                cylindrical: dilatedCylindricalNV,
-                axis: dilatedAxisNV,
-                side: side,
-                valueType: 'DL',
-                visionType: 'NV',
+                valueType: value_type,
+                visionType: vision_type,
                 updatedBy: 1,
             });
 
             // Refetch data to ensure UI is in sync
-            fetchRefractionData();
+            fetchRefractionData(value_type, vision_type);
         } catch (error) {
             console.error('Error while updating refraction data: ', error);
             toast({
@@ -218,7 +174,10 @@ const PatientRefraction: React.FC<{
 
     const toggleLock = async () => {
         if (!isLocked) {
-            await handleRefractionUpdate();
+            await handleRefractionUpdate('UD', 'DV');
+            await handleRefractionUpdate('DL', 'DV');
+            await handleRefractionUpdate('UD', 'NV');
+            await handleRefractionUpdate('DL', 'NV');
         }
         setIsLocked(!isLocked);
     };
@@ -228,7 +187,10 @@ const PatientRefraction: React.FC<{
     };
 
     useEffect(() => {
-        fetchRefractionData();
+        fetchRefractionData('UD', 'DV');
+        fetchRefractionData('DL', 'DV');
+        fetchRefractionData('UD', 'NV');
+        fetchRefractionData('DL', 'NV');
     }, []);
 
     const renderValueOrDropdown = (value: string, setValue: (value: string) => void, options: string[]) => {

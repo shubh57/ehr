@@ -106,23 +106,13 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'COMPLETED':
-                return theme.palette.success.main;
+                return theme.palette.paperGreen.default;
             case 'TO_BE_REVIEWED':
-                return theme.palette.warning.main;
+                return theme.palette.paperYellow.light;
             case 'INCOMPLETE':
-                return theme.palette.error.main;
+                return theme.palette.paperRed.default;
             default:
                 return theme.palette.text.primary;
-        }
-    };
-
-    const getTextColor = (status: string) => {
-        switch (status) {
-            case 'COMPLETED':
-            case 'TO_BE_REVIEWED':
-                return theme.palette.common.black;
-            default:
-                return theme.palette.common.white;
         }
     };
 
@@ -268,7 +258,6 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                             display: 'flex',
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
-                                                            color: getTextColor(procedure.status),
                                                         }}
                                                     >
                                                         <Typography variant='body1' fontWeight='bold'>
@@ -285,7 +274,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                     </Box>
 
                                                     <Box sx={{ flex: 1 }}>
-                                                        <Typography variant='body2' color={getTextColor(procedure.status)}>
+                                                        <Typography variant='body2'>
                                                             {new Date(procedure.activity_time).toLocaleString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: '2-digit',
@@ -304,7 +293,6 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
                                                                 gap: 1,
-                                                                color: getTextColor(procedure.status),
                                                             }}
                                                         >
                                                             {procedure.procedure_description && (
@@ -357,7 +345,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                                                             }
                                                         }}
                                                         fullWidth
-                                                        sx={{ mt: 2, color: getTextColor(procedure.status) }}
+                                                        sx={{ mt: 2 }}
                                                         InputProps={{
                                                             endAdornment: (
                                                                 <InputAdornment position='end'>

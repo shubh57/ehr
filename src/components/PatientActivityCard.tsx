@@ -42,11 +42,11 @@ const PatientActivityCard: React.FC<PatientActivityCardProps> = ({ patient_id })
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'COMPLETED':
-                return theme.palette.success.main;
+                return theme.palette.paperGreen.default;
             case 'TO_BE_REVIEWED':
-                return theme.palette.warning.main;
+                return theme.palette.paperYellow.default;
             case 'INCOMPLETE':
-                return theme.palette.error.main;
+                return theme.palette.paperRed.default;
             default:
                 return theme.palette.text.primary;
         }

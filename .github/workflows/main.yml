@@ -71,7 +71,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE_TAG='App v__VERSION__'
+          RELEASE_TAG='v0.1.2'
           RELEASE_TITLE="Release $RELEASE_TAG"
           RELEASE_BODY="See the attached assets for installation details."
           curl -L \
