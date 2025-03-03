@@ -70,6 +70,7 @@ jobs:
       - name: create release in public github repo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           RELEASE_TAG='v0.1.2'
           RELEASE_TITLE="Release $RELEASE_TAG"
