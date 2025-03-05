@@ -1,44 +1,54 @@
 // src/components/UpdateComponent.tsx
 
 // Dependencies
-import { Button } from "@mui/material";
-import { check } from "@tauri-apps/plugin-updater";
-import { useConfirm } from "material-ui-confirm";
+import React, { useEffect, useState } from 'react';
+import { Snackbar, Button, Alert, useTheme } from '@mui/material';
+import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import React, { useEffect } from "react";
+
+interface UpdateInfo {
+    version: string;
+    body?: string;
+    downloadAndInstall: (callback: (event: any) => void) => Promise<void>;
+}
 
 const UpdateComponent: React.FC = () => {
-    const confirm = useConfirm();
+    const theme = useTheme();
 
-    const checkForUpdates = async () => {
+    const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useEffect(() => {
+        const checkForUpdates = async () => {
+            try {
+                const update = await check();
+                if (!update) {
+                    // setUpdateInfo(update as UpdateInfo);
+                    setSnackbarOpen(true);
+                }
+            } catch (error) {
+                console.error('Error while fetching updates: ', error);
+            }
+        };
+
+        checkForUpdates();
+    }, []);
+
+    const handleUpdate = async () => {
+        if (!updateInfo) return;
+        setIsUpdating(true);
         try {
-            const update = await check();
-            console.log("update: ", update);
-            if (!update) {
-                return;
-            }
-
-            const { confirmed } = await confirm({
-                title: 'Update Available',
-                description: `Version ${update.version} is available. Release notes: ${update.body}. Would you like to update now?`,
-                confirmationText: 'Update',
-                cancellationText: 'Later',
-            });
-
-            if (!confirmed) {
-                return;
-            }
-
             let downloaded = 0;
             let contentLength = 0;
-
-            await update.downloadAndInstall((event) => {
+            await updateInfo.downloadAndInstall((event) => {
                 switch (event.event) {
                     case 'Started':
                         contentLength = event.data.contentLength || 0;
                         break;
                     case 'Progress':
                         downloaded += event.data.chunkLength;
+                        // Optionally update a progress bar or log progress
                         break;
                     case 'Finished':
                         break;
@@ -46,30 +56,44 @@ const UpdateComponent: React.FC = () => {
                         break;
                 }
             });
-
-            const { confirmed: relaunchConfirmed } = await confirm(
-                {
-                    title: 'Restart Application Now?',
-                    description: `Version ${update.version} is downloaded. Release notes: ${update.body}. Would you like to restart the application now?`,
-                    confirmationText: 'Restart',
-                    cancellationText: 'Later',
-                }
-            );
-
-            if (relaunchConfirmed) {
+            setSnackbarOpen(false);
+            // Optional: Prompt user for restart after update
+            if (window.confirm(`Version ${updateInfo.version} has been downloaded. Restart now?`)) {
                 await relaunch();
             }
         } catch (error) {
-            console.error("Error while fetching updates: ", error);
+            console.error('Error during update process: ', error);
+        } finally {
+            setIsUpdating(false);
         }
     };
 
-    useEffect(() => {
-        checkForUpdates();
-    }, []);
-
     return (
-        <></>
+        <>
+            <Snackbar
+                open={snackbarOpen}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Change to { horizontal: "left" } if preferred.
+                sx={{
+                    backgroundColor: theme.palette.paperYellow.light,
+                }}
+                onClose={() => setSnackbarOpen(false)}
+                message={
+                    <span>
+                        Update available: {updateInfo?.version}. {updateInfo?.body && `Notes: ${updateInfo.body}`}
+                    </span>
+                }
+                action={
+                    <>
+                        <Button color='secondary' size='small' onClick={handleUpdate} disabled={isUpdating}>
+                            {isUpdating ? 'Updating...' : 'Update'}
+                        </Button>
+                        <Button color='inherit' size='small' onClick={() => setSnackbarOpen(false)}>
+                            Later
+                        </Button>
+                    </>
+                }
+            />
+        </>
     );
 };
 

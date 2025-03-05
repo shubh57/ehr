@@ -29,8 +29,8 @@ declare module '@mui/material/styles' {
     interface TypeBackground {
         paperLight: string;
         paperExtraLight: string;
-        brownishDark: string;
         paperDark: string;
+        brownishDark: string;
     }
     interface TypeText {
         light: string;
@@ -59,62 +59,61 @@ declare module '@mui/material/styles' {
     }
 }
 
-// Define the color palette
+// Updated color palette based on modern design research and trends common among Fortune 500 companies.
 const palette: PaletteOptions = {
     primary: {
-        main: '#F97316', // Orange
-        dark: '#C2410C', // dark Orange
+        main: '#1E3A8A', // A deep, corporate blue evokes trust and stability.
+        dark: '#172554', // A darker variant for emphasis.
     },
     secondary: {
-        main: '#F1F5F9', // Light grey
-        dark: '#E2E8F0', // Dark grey
-        contrastText: '#CBD5E1', // Darkest grey
+        main: '#F5F7FA', // A soft, neutral background with a hint of blue.
+        dark: '#E4E7EB', // A slightly darker tone for subtle contrast.
+        contrastText: '#6B7280', // Refined medium grey for accessible text.
     },
     tertiary: {
-        main: '#FCD34D33', // Yellow
-        lightOrange: '#FDBA74', // Light Orange (high priority color)
-        lightYellow: '#FDE047', // Light Yellow (medium priority color)
-        lightGreen: '#BEF264', // Light Green (low priority color)
-        red: '#EF4444', // Red
+        main: '#0D9488', // A muted teal accent that adds a modern touch.
+        lightOrange: '#FBBF24', // A refined amber for high-priority highlights.
+        lightYellow: '#FACC15', // A soft, subdued yellow for medium emphasis.
+        lightGreen: '#4ADE80', // A fresh, yet muted green for low priority.
+        red: '#DC2626', // A sophisticated red for error states and alerts.
     },
     error: {
-        main: '#B91C1C', // Red
+        main: '#B91C1C', // A refined error red.
     },
     background: {
-        default: '#FFFFFF', // White background
-        paper: '#F1F5F9', // Light grey background for paper-like components
-        paperLight: '#F8FAFC', // Lighter grey background for paper-like components
-        paperExtraLight: '#FCFDFE',
-        paperDark: '#DEE5ED', // Darker grey background for paper-like components
-        brownishDark: '#78350F',
+        default: '#FFFFFF', // Clean white for a crisp look.
+        paper: '#F5F7FA', // Consistent with secondary main for paper surfaces.
+        paperLight: '#F8FAFC', // A very light background for alternate surfaces.
+        paperExtraLight: '#FCFDFE', // Nearly white, for high contrast.
+        paperDark: '#E4E7EB', // For contexts requiring a darker paper background.
+        brownishDark: '#5D4037', // A muted brown used sparingly for contrast.
     },
     text: {
-        primary: '#020617', // Dark text color (primary text)
-        secondary: '#475569', // Grey text color (secondary text)
-        light: '#1E293B', // Light grey text color
-        darkest: '#000000', // Black text color
-        disabled: '#A0AEC0',
+        primary: '#1F2937', // Modern dark slate for primary text.
+        secondary: '#4B5563', // A refined medium grey for secondary text.
+        light: '#374151', // Slightly lighter than primary for subheadings.
+        darkest: '#111827', // Near-black for maximum contrast.
+        disabled: '#A0AEC0', // Light grey for disabled states.
     },
     border: {
-        default: '#CBD5E1',
-        secondary: '#EEF1F6',
+        default: '#E4E7EB', // Subtle borders that maintain a clean look.
+        secondary: '#CBD5E0', // A slightly different tone for secondary borders.
     },
     paperYellow: {
-        default: '#C2410C',
-        dark: '#7C2D12',
-        darklight: '#FEF3C7',
-        light: '#FDE68A',
+        default: '#EAB308', // A mature amber tone.
+        dark: '#A16207',
+        darklight: '#FDE68A',
+        light: '#FCD34D',
         textyellow: '#92400E',
     },
     paperGreen: {
-        default: '#BBF7D0',
+        default: '#14B8A6', // A modern teal for paper accents.
     },
     paperRed: {
-        default: '#f26f6f',
+        default: '#EF4444', // A refined red tone for paper accents.
     },
 };
 
-// Define typography
 const typography = {
     fontFamily: '"Readex Pro", "Roboto", "Helvetica", "Arial", sans-serif',
     h2: {
@@ -169,11 +168,10 @@ const typography = {
         fontWeight: 500,
         lineHeight: '20px',
         letterSpacing: '0.1px',
-        textTransform: 'none' as 'none', // Disable auto-capitalization
+        textTransform: 'none' as 'none',
     },
 };
 
-// Define component-specific styles
 const components: Components = {
     MuiButton: {
         styleOverrides: {
@@ -192,24 +190,23 @@ const components: Components = {
     },
 };
 
-// Create the theme
 let theme = createTheme({
     palette,
     typography,
     components,
-    spacing: 4, // The base spacing unit, which represents 4px by default
-    shadows: Array(25).fill('none') as Shadows, // Flat shadows
+    spacing: 4, // Base spacing unit
+    shadows: Array(25).fill('none') as Shadows, // Flat shadow style for a clean modern look
 });
 
 theme = createTheme(theme, {
-    // Custom colors created with augmentColor go here
+    // Augment the palette with a corporate blue tone for additional branding if needed.
     palette: {
         salmon: theme.palette.augmentColor({
             color: {
-                main: '#A34914',
-                dark: '78350F',
+                main: '#1E3A8A',
+                dark: '#172554',
             },
-            name: 'rustOrange',
+            name: 'corporateBlue',
         }),
     },
 });

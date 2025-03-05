@@ -96,7 +96,7 @@ const PatientRefraction: React.FC<{
                         case 'DV': {
                             setSphericalDV(data?.spherical || 'N/A');
                             setCylindricalDV(data?.cylindrical || 'N/A');
-                            setAxisDV(data?.axis || 'N/A');    
+                            setAxisDV(data?.axis || 'N/A');
                             break;
                         }
                         case 'NV': {
@@ -125,7 +125,6 @@ const PatientRefraction: React.FC<{
                     }
                 }
             }
-            
         } catch (error) {
             console.error('Error while fetching refraction data: ', error);
             toast({

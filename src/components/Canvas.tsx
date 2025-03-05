@@ -241,11 +241,13 @@ const Canvas: React.FC<CanvasProps> = ({ width = window.innerWidth, height = win
         >
             {/* Controls Panel */}
             <Paper elevation={3} sx={{ padding: 2, margin: 2, display: 'flex', justifyContent: 'space-between' }}>
-                <Box sx={{
-                    display: 'flex',
-                    width: '100%',
-                    justifyContent: 'space-between'
-                }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                    }}
+                >
                     <Box>
                         {!eraseMode && (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>

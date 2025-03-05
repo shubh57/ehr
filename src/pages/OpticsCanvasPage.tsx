@@ -1,14 +1,14 @@
 // src/pages/OpticsCanvasPage.tsx
 
 // Dependencies
-import React from "react";
-import Canvas from "../components/Canvas";
-import { Box, Button, Paper, Typography, useTheme } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router-dom";
+import React from 'react';
+import Canvas from '../components/Canvas';
+import { Box, Button, Paper, Typography, useTheme } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const OpticsCanvasPage: React.FC = () => {
-    const {patient_id} = useParams();
+    const { patient_id } = useParams();
     const theme = useTheme();
     const patientId = parseInt(patient_id || '0');
     const navigate = useNavigate();
@@ -118,13 +118,13 @@ const OpticsCanvasPage: React.FC = () => {
                 sx={{
                     display: 'flex',
                     width: '100%',
-                    height: '100%'
+                    height: '100%',
                 }}
             >
-                <Canvas/>
+                <Canvas />
             </Box>
         </Box>
-    )
+    );
 };
 
 export default OpticsCanvasPage;

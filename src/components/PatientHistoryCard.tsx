@@ -29,7 +29,7 @@ const renderBubbles = (items: string[] | undefined, emptyMessage: string) => {
                     margin: '4px',
                 }}
             >
-                <Typography variant='body2' color='text.secondary'>
+                <Typography variant='body2' color={theme.palette.common.black}>
                     {emptyMessage}
                 </Typography>
             </Box>
@@ -43,7 +43,7 @@ const renderBubbles = (items: string[] | undefined, emptyMessage: string) => {
                 display: 'inline-block',
                 padding: '6px 12px',
                 backgroundColor: theme.palette.background.paperDark,
-                color: theme.palette.primary.contrastText,
+                color: theme.palette.common.black,
                 borderRadius: '16px',
                 margin: '4px',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',

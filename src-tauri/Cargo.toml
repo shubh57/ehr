@@ -29,6 +29,8 @@ dotenv = "0.15"
 tokio = { version = "1", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 base64 = "0.21"
+jsonwebtoken = "8"
+bcrypt = "*"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
