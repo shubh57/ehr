@@ -2,20 +2,19 @@
 
 // Dependancies
 use db::DatabaseState;
-use dotenv::dotenv;
-use sqlx::postgres::PgPool;
 use std::{env, sync::Arc};
-use tauri::utils::config;
-use tauri::{Listener, Manager, State};
-use tokio::fs;
+use tauri::{Listener, Manager};
 use tokio::sync::Mutex;
 
 // Modules
 pub mod db;
-pub mod db_vision;
 pub mod patients;
 pub mod vision;
 pub mod file;
+pub mod common_tables;
+pub mod patient_tables;
+pub mod vision_tables;
+pub mod auth;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -33,19 +32,48 @@ pub fn run() {
                     Ok(pool) => {
                         eprintln!("Database connected successfully.");
 
-                        // match db::setup_complete_database(&pool, true).await {
-                        //     Ok(_) => eprintln!("Setup database successfully."),
+                        // match vision_tables::delete_vision_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Deleted vision table"),
                         //     Err(err) => {
-                        //         eprintln!("Error while setting up database: {}", err);
+                        //         eprintln!("Error while deleting vision table: {}", err);
                         //         std::process::exit(1);
                         //     }
                         // }
 
-                        // match db_vision::setup_vision_tables(&pool, true).await {
-                        //     Ok(_) => eprintln!("Vision tables setup up successfully."),
+                        // match patient_tables::delete_patient_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Deleted patient table"),
                         //     Err(err) => {
-                        //         eprintln!("Error while setting up vision tables: {}", err);
+                        //         eprintln!("Error while deleting vision table: {}", err);
                         //         std::process::exit(1);
+                        //     }
+                        // }
+
+                        // match common_tables::delete_common_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Deleted common table"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while deleting vision table: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
+
+                        // match common_tables::setup_all_tables(&pool, true).await {
+                        //     Ok(_) => eprintln!("Setup common tables"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up common tables: {}", err)
+                        //     }
+                        // }
+
+                        // match patient_tables::setup_all_patient_tables(&pool, true).await {
+                        //     Ok(_) => eprintln!("Setup patient tables"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up patient tables: {}", err)
+                        //     }
+                        // }
+
+                        // match vision_tables::setup_vision_tables(&pool, true).await {
+                        //     Ok(_) => eprintln!("Setup vision tables"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up vision table: {}", err)
                         //     }
                         // }
 
@@ -62,7 +90,7 @@ pub fn run() {
             app.manage(DatabaseState { pool: pool.clone() });
 
             // Cleanup when app exits
-            app.listen("tauri://clone-requested", move |event| {
+            app.listen("tauri://clone-requested", move |_event| {
                 let pool = pool.clone();
                 tauri::async_runtime::spawn(async move {
                     drop(pool.lock().await);
@@ -78,6 +106,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             file::save_pdf_file,
+            auth::login,
+            auth::signup,
             patients::get_patient_data,
             patients::get_patient_activity_data,
             patients::get_patients_data,

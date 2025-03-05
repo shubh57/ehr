@@ -135,7 +135,7 @@ const PatientOptics: React.FC = () => {
         const downloadPath = await downloadDir();
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        let binaryString = "";
+        let binaryString = '';
         for (let i = 0; i < uint8Array.length; i++) {
             binaryString += String.fromCharCode(uint8Array[i]);
         }
@@ -144,7 +144,7 @@ const PatientOptics: React.FC = () => {
         const fileName = `glass_prescription_${patientData?.mr_number || 'patient'}.pdf`;
 
         try {
-            await invoke ('save_pdf_file', { fileName, base64Data: base64String, downloadPath: downloadPath });
+            await invoke('save_pdf_file', { fileName, base64Data: base64String, downloadPath: downloadPath });
             toast({
                 title: 'Prescription downloaded successfully.',
                 status: 'success',
@@ -154,7 +154,7 @@ const PatientOptics: React.FC = () => {
             });
             setPrescriptionDialogOpen(false);
         } catch (error) {
-            console.error("Error while saving pdf file: ", error);
+            console.error('Error while saving pdf file: ', error);
             toast({
                 title: 'Error while downloading prescription.',
                 status: 'error',
@@ -619,7 +619,7 @@ const PatientOptics: React.FC = () => {
                         }}
                     >
                         {({ blob, url, loading, error }) => (
-                            <Button variant='contained' color='primary' disabled={loading} onClick={async() => await handleDownloadPdf(blob)}>
+                            <Button variant='contained' color='primary' disabled={loading} onClick={async () => await handleDownloadPdf(blob)}>
                                 {loading ? 'Preparing document...' : 'Download PDF'}
                             </Button>
                         )}

@@ -1,13 +1,9 @@
 // src-tauri/src/vision.rs
 
-use std::cell::Ref;
-
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use tauri::State;
-
 // Dependencies
 use crate::db::DatabaseState;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 // Sturct to store input for get_vision_data
 #[derive(Serialize, Deserialize)]
@@ -83,7 +79,7 @@ pub async fn get_vision_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -150,7 +146,7 @@ pub async fn get_refraction_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -228,7 +224,7 @@ pub async fn update_vision_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -285,7 +281,7 @@ pub async fn update_vision_data(
     .fetch_one(&*pool)
     .await
     {
-        Ok(record) => Ok(format!("Successfully updated vision data")),
+        Ok(_record) => Ok(format!("Successfully updated vision data")),
         Err(err) => Err(format!("Error while updating vision data: {}", err)),
     }
 }
@@ -306,7 +302,7 @@ pub async fn update_refraction_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -372,7 +368,7 @@ pub async fn update_refraction_data(
     .fetch_one(&*pool)
     .await
     {
-        Ok(record) => Ok(format!("Successfully updated refraction data")),
+        Ok(_record) => Ok(format!("Successfully updated refraction data")),
         Err(err) => Err(format!("Error while updating refraction data: {}", err)),
     }
 }
@@ -387,7 +383,7 @@ pub async fn get_patient_eye_measurement_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -450,7 +446,7 @@ pub async fn update_patient_eye_measurement_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };

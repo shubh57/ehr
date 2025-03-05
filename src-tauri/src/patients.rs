@@ -5,8 +5,6 @@ use crate::db::DatabaseState;
 use chrono;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::Serialize;
-use sqlx::{pool, postgres::PgRow, Column};
-use std::fmt::format;
 use tauri::State;
 
 // Struct to store result of get_patient_data
@@ -101,7 +99,7 @@ pub async fn get_patient_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -148,7 +146,7 @@ pub async fn get_patients_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => {
+        Err(_err) => {
             return Err("Encryption key not provided.".to_string());
         }
     };
@@ -188,8 +186,12 @@ pub async fn get_patient_activity_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden."));
+    }
 
     match sqlx::query_as!(
         PatientActivityData,
@@ -232,8 +234,12 @@ pub async fn get_appointment_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden."));
+    }
 
     match sqlx::query_as!(
         AppointmentData,
@@ -273,8 +279,8 @@ pub async fn get_appointment_data(
 // Endpoint to get patient summary data
 #[tauri::command]
 pub async fn get_patient_summary_data(
-    state: State<'_, DatabaseState>,
-    patient_id: i32,
+    _state: State<'_, DatabaseState>,
+    _patient_id: i32,
 ) -> Result<Vec<String>, String> {
     Ok(vec![
         "Parvon experienced red and watery eyes.".to_string(),
@@ -295,8 +301,12 @@ pub async fn get_patient_history_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     match sqlx::query_as!(
         PatientHistoryData,
@@ -348,8 +358,12 @@ pub async fn get_patient_doctor_data(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden."));
+    }
 
     match sqlx::query_as!(
         PatientDoctorData,
@@ -380,8 +394,12 @@ pub async fn get_all_procedures(state: State<'_, DatabaseState>) -> Result<Vec<P
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     match sqlx::query_as!(
         Procedure,
@@ -413,8 +431,12 @@ pub async fn get_patient_procedures(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     match sqlx::query_as!(
         PatientProcedureData,
@@ -463,11 +485,12 @@ pub async fn add_comment_to_procedure(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
 
-    // Encrypt the new comment
-    let encrypted_comment = format!("pgp_sym_encrypt('{}', '{}')", comment, encryption_key);
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     // Update the comments field by decrypting, appending, and re-encrypting
     match sqlx::query!(
@@ -506,8 +529,12 @@ pub async fn create_patient_activity(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     // Convert activity_time from String to DateTime<Utc>
     let activity_time = match activity_time.parse::<DateTime<Utc>>() {
@@ -564,8 +591,12 @@ pub async fn get_patient_complaints(
     let pool = state.pool.lock().await;
     let encryption_key = match std::env::var("ENCRYPTION_KEY") {
         Ok(key) => key,
-        Err(err) => "".to_string(),
+        Err(_err) => "".to_string(),
     };
+
+    if encryption_key.len() == 0 {
+        return Err(format!("Forbidden"));
+    }
 
     match sqlx::query!(
         r#"

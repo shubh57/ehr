@@ -66,6 +66,7 @@ const ConsoleBox: React.FC = () => {
                             backgroundColor: theme.palette.background.paperDark,
                             transform: 'scale(0.98)',
                         },
+                        color: theme.palette.common.black
                     }}
                 >
                     {label === 'Dilate' ? dilationStatus : label}

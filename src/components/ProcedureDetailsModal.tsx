@@ -41,8 +41,8 @@ const ProcedureDetailsModal: React.FC<{
                 patientId: patient_id,
                 procedureId: procedure.procedure_id,
                 status: status || 'TO_BE_REVIEWED',
-                doctorsNote: doctorNote || "",
-                patientComplaint: patientComplaint || "",
+                doctorsNote: doctorNote || '',
+                patientComplaint: patientComplaint || '',
                 activityTime: formattedTime,
             });
             toast({
