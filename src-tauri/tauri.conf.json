@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "ehrportal",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "identifier": "com.ehrportal.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -24,11 +24,11 @@
     ],
     "security": {
       "csp": {
-        "default-src": ["'self'"],
-        "img-src": ["'self'", "data:", "asset:"],
+        "default-src": ["'self'", "blob:"],
+        "img-src": ["'self'", "data:", "asset:", "blob:"],
         "style-src": ["'self'", "'unsafe-inline'"],
-        "script-src": ["'self'", "'unsafe-eval'"],
-        "connect-src": ["'self'"]
+        "script-src": ["'self'", "'unsafe-eval'", "blob:"],
+        "connect-src": ["'self'", "blob:"]
       }
     }
   },
