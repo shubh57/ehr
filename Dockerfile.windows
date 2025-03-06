@@ -1,0 +1,22 @@
+# Use Node LTS image as the base
+FROM node:lts as builder
+
+# Install mingw-w64 and other required packages for Windows cross-compilation
+RUN apt-get update && apt-get install -y \
+    mingw-w64 \
+    build-essential \
+    curl
+
+# Install Rust and add the Windows target (x86_64-pc-windows-gnu)
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup target add x86_64-pc-windows-gnu
+
+# Set the working directory and copy project files
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+
+# Build the Tauri application (it will pick up the Windows target automatically)
+RUN cargo tauri build --release
