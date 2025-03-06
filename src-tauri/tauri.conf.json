@@ -59,7 +59,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJDQzNEODczMUFGMDk2MzYKUldRMmx2QWFjOWpETEQ3OXJXYVEwRWVTZFRmVUtMcjlrdW1ScFVqQXQ1OWJ1RmsvNjVxNCs3YjUK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyRjA3MUZFRDA2QzY1QzYKUldUR1pXelEvbkh3Y3RCcG5zSFRBR1NMVmNOclZTZ0RmUGZBbUMvT2RNY0pNVWYxdUpMUVhlTTQK",
       "endpoints": [
           "https://gist.githubusercontent.com/Shubh-81/6b397878700ad3e945bce77cda8d498b/raw/latest.json"
       ],
