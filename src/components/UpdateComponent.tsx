@@ -24,6 +24,7 @@ const UpdateComponent: React.FC = () => {
             try {
                 const update = await check();
                 if (update) {
+                    console.log('Update: ', update);
                     setUpdateInfo(update as UpdateInfo);
                     setSnackbarOpen(true);
                 }

@@ -28,10 +28,10 @@ const LoginPage: React.FC = () => {
             setIsLoading(true);
 
             const data: any = await invoke('login', { email, password });
-            console.log("data: ", data);
+            console.log('data: ', data);
 
             if (!data || !data.token || !data.user) {
-                throw Error(data.error || "Error while loggin in");
+                throw Error(data.error || 'Error while loggin in');
             }
 
             toast({
@@ -160,7 +160,7 @@ const LoginPage: React.FC = () => {
                                 width: '100%',
                             }}
                         >
-                            {isLoading ? <CircularProgress />: "Login"}
+                            {isLoading ? <CircularProgress /> : 'Login'}
                         </CustomButton>
 
                         <Divider sx={{ my: 2 }}>

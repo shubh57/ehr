@@ -11,6 +11,7 @@ import OpticsCanvasPage from '../pages/OpticsCanvasPage';
 import LoginPage from '../pages/LoginPage';
 import ProtectedRoute from './ProtectedRoute';
 import SignupPage from '../pages/SignupPage';
+import Dashboard from '../pages/Dashboard';
 
 const AllRoutes = () => {
     return (
@@ -18,58 +19,58 @@ const AllRoutes = () => {
             <Route path='/login' element={<LoginPage />} />
             <Route path='/signup' element={<SignupPage />} />
 
-            <Route 
-                path='/' 
+            <Route
+                path='/'
                 element={
                     <ProtectedRoute>
-                        <ConsultantPage />
+                        <Dashboard />
                     </ProtectedRoute>
-                } 
+                }
             />
 
-            <Route 
-                path='/patient_details/:patient_id' 
+            <Route
+                path='/patient_details/:patient_id'
                 element={
                     <ProtectedRoute>
                         <PatientDetails />
                     </ProtectedRoute>
-                } 
+                }
             />
 
-            <Route 
-                path='/patient_procedure/:patient_id' 
+            <Route
+                path='/patient_procedure/:patient_id'
                 element={
                     <ProtectedRoute>
                         <PatientProcedurePage />
                     </ProtectedRoute>
-                } 
+                }
             />
 
-            <Route 
-                path='/patient_optics/:patient_id' 
+            <Route
+                path='/patient_optics/:patient_id'
                 element={
                     <ProtectedRoute>
                         <PatientOptics />
                     </ProtectedRoute>
-                } 
+                }
             />
 
-            <Route 
-                path='/optics_canvas/:patient_id' 
+            <Route
+                path='/optics_canvas/:patient_id'
                 element={
                     <ProtectedRoute>
                         <OpticsCanvasPage />
                     </ProtectedRoute>
-                } 
+                }
             />
 
-            <Route 
-                path='*' 
+            <Route
+                path='*'
                 element={
                     <ProtectedRoute>
                         <UnderConstruction />
                     </ProtectedRoute>
-                } 
+                }
             />
         </Routes>
     );

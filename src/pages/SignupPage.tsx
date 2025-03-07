@@ -2,7 +2,21 @@
 
 // Dependencies
 import React, { useState } from 'react';
-import { Box, TextField, Typography, useTheme, InputAdornment, IconButton, Link, Divider, FormControl, InputLabel, Select, MenuItem, CircularProgress } from '@mui/material';
+import {
+    Box,
+    TextField,
+    Typography,
+    useTheme,
+    InputAdornment,
+    IconButton,
+    Link,
+    Divider,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    CircularProgress,
+} from '@mui/material';
 import { Visibility, VisibilityOff, Person, Email, Lock } from '@mui/icons-material';
 import CustomButton from '../common-components/CustomButton';
 import { useToast } from '@chakra-ui/react';
@@ -276,7 +290,7 @@ const SignupPage: React.FC = () => {
                         />
 
                         <CustomButton fullWidth size='large' variant='contained' onClick={handleSignup} disabled={isLoading} sx={{ width: '100%' }}>
-                            {isLoading ? <CircularProgress />: "Signup"}
+                            {isLoading ? <CircularProgress /> : 'Signup'}
                         </CustomButton>
 
                         <Divider sx={{ my: 2 }}>

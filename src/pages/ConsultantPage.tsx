@@ -9,6 +9,8 @@ import UpdateComponent from '../components/UpdateComponent';
 import CustomButton from '../common-components/CustomButton';
 import { useDispatch } from 'react-redux';
 import { clearCredentials } from '../redux/auth/authSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
 
 export type Patient = {
     patient_id: number;
@@ -24,6 +26,7 @@ export type Patient = {
 const ConsultantPage = () => {
     const theme = useTheme();
     const dispatch = useDispatch();
+    const { token, user } = useSelector((state: RootState) => state.auth);
 
     const [update, setUpdate] = useState<any>(null);
 
@@ -49,9 +52,7 @@ const ConsultantPage = () => {
                 }}
             >
                 <Box>
-                    <CustomButton onClick={() => dispatch(clearCredentials())}>
-                        Logout
-                    </CustomButton>
+                    <CustomButton onClick={() => dispatch(clearCredentials())}>Logout</CustomButton>
                 </Box>
                 <Box
                     sx={{
