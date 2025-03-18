@@ -10,8 +10,10 @@ import muiTheme from './theme/muiTheme';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
+import { attachConsole } from '@tauri-apps/plugin-log';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+attachConsole();
 
 root.render(
     <ChakraProvider theme={chakraTheme} resetCSS>

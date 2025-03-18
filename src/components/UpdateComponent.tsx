@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Snackbar, Button, Alert, useTheme } from '@mui/material';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { info, warn, error, debug } from '@tauri-apps/plugin-log';
 
 interface UpdateInfo {
     version: string;
@@ -24,8 +25,11 @@ const UpdateComponent: React.FC = () => {
             try {
                 const update = await check();
                 console.log('Update: ', update);
+                info("Update");
                 if (update) {
                     setUpdateInfo(update as UpdateInfo);
+                    info(update.version);
+                    info(update.body || "");
                     setSnackbarOpen(true);
                 }
             } catch (error) {
