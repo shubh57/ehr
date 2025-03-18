@@ -2,17 +2,13 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, List, ListItem, ListItemText, Avatar, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SearchIcon from '@mui/icons-material/Search';
-import ChatIcon from '@mui/icons-material/Chat';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import HelpIcon from '@mui/icons-material/Help';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PatientList from '../components/PatientList';
-import { useDispatch } from 'react-redux';
-import { clearCredentials } from '../redux/auth/authSlice';
+import UpdateComponent from '../components/UpdateComponent';
+import Header from '../components/doctor-dashboard/Header';
+import WeatherWidget from '../components/doctor-dashboard/WeatherWidget';
 
 // A common style for container boxes to simulate a card-like appearance.
 const boxStyle = {
@@ -22,28 +18,6 @@ const boxStyle = {
     backgroundColor: '#F5F7FA',
     borderRadius: '8px',
     gap: '1rem',
-};
-
-// Header: Displays the doctor's name, current date/time, a universal search, and logout button.
-const Header = () => {
-    const dispatch = useDispatch();
-
-    return (
-        <Box display='flex' justifyContent='space-between' alignItems='center' p={2} borderBottom='1px solid #ccc'>
-            <Typography variant='h4'>Dr. John Doe</Typography>
-            <Box display='flex' alignItems='center'>
-                <Typography variant='body1' mr={2}>
-                    {new Date().toLocaleString('en-GB')}
-                </Typography>
-                <IconButton color='primary'>
-                    <SearchIcon />
-                </IconButton>
-                <Button variant='outlined' startIcon={<LogoutIcon />} onClick={() => dispatch(clearCredentials())}>
-                    Logout
-                </Button>
-            </Box>
-        </Box>
-    );
 };
 
 // InstantMessages: Shows dummy chat messages with sender and content.
@@ -203,25 +177,6 @@ const DiagnosticNotifications = () => {
     );
 };
 
-// WeatherWidget: Displays a simple weather widget.
-const WeatherWidget = () => {
-
-    const theme = useTheme();
-
-    const weather = { condition: 'Sunny', temperature: '25°C' };
-    return (
-        <Box sx={{ ...boxStyle, textAlign: 'center', padding: '16px',
-            backgroundColor: theme.palette.secondary.main,
-            borderRadius: '8px',
-            boxShadow: theme.shadows[2],
-            gap: '1rem', }}>
-            <WbSunnyIcon fontSize='large' color='warning' />
-            <Typography variant='h6'>{weather.condition}</Typography>
-            <Typography variant='body1'>{weather.temperature}</Typography>
-        </Box>
-    );
-};
-
 // SupportButtons: Provides buttons to access the software helpdesk and issue reporting.
 const SupportButtons = () => {
     return (
@@ -241,6 +196,7 @@ const Dashboard = () => {
     const theme = useTheme();
     return (
         <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', p: 2, width: '100%' }}>
+            <UpdateComponent />
             <Header />
             <Box display='flex' flexDirection={{ xs: 'column', md: 'row' }} gap={2} mt={2}>
                 <Box flex={1}>

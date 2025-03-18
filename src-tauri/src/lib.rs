@@ -11,9 +11,11 @@ pub mod db;
 pub mod patients;
 pub mod vision;
 pub mod file;
+pub mod messaging;
 pub mod common_tables;
 pub mod patient_tables;
 pub mod vision_tables;
+pub mod messaging_tables;
 pub mod auth;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -74,6 +76,13 @@ pub fn run() {
                         //     Ok(_) => eprintln!("Setup vision tables"),
                         //     Err(err) => {
                         //         eprintln!("Error while setting up vision table: {}", err)
+                        //     }
+                        // }
+
+                        // match messaging_tables::setup_messaging_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Setup messaging tables"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up messaging tables: {}", err)
                         //     }
                         // }
 

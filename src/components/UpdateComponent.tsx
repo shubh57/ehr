@@ -23,8 +23,8 @@ const UpdateComponent: React.FC = () => {
         const checkForUpdates = async () => {
             try {
                 const update = await check();
+                console.log('Update: ', update);
                 if (update) {
-                    console.log('Update: ', update);
                     setUpdateInfo(update as UpdateInfo);
                     setSnackbarOpen(true);
                 }
