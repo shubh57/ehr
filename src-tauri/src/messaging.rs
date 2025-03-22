@@ -200,7 +200,6 @@ pub async fn poll_messages(
     Ok(())
 }
 
-// Get all messages for a conversation
 #[tauri::command]
 pub async fn get_messages_for_conversation(
     state: tauri::State<'_, DatabaseState>,
@@ -208,39 +207,30 @@ pub async fn get_messages_for_conversation(
     conversation_id: i32
 ) -> Result<Vec<MessageData>, String> {
     let pool = state.pool.lock().await;
-    let user = get_user_from_token(token)?;
+    let _user = get_user_from_token(token)?; // Validate token first
 
-    eprintln!("{}", conversation_id);
-
-    let result = sqlx::query_as!(
+    sqlx::query_as!(
         MessageData,
         r#"
         SELECT
             m.message_id,
             m.conversation_id,
             m.sender_id,
-            ms.recipient_id,
+            COALESCE(ms.recipient_id, -1) as "recipient_id?",
             m.content,
-            ms.status,
+            COALESCE(ms.status, 'delivered') as "status?",
             m.created_at
-        FROM
-            messages m
-        LEFT JOIN
-            message_status ms
-        ON
-            m.message_id = ms.message_id
-        WHERE
-            m.conversation_id = $1
-        ORDER BY
-            m.created_at DESC
+        FROM messages m
+        LEFT JOIN message_status ms 
+            ON m.message_id = ms.message_id
+        WHERE m.conversation_id = $1
+        ORDER BY m.created_at DESC
         "#,
-        &conversation_id
+        conversation_id
     )
     .fetch_all(&*pool)
     .await
-    .map_err(|e| format!("Error while getting messages: {}", e));
-
-    result
+    .map_err(|e| format!("Message fetch error: {}", e))
 }
 
 // Get conversation id

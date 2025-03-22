@@ -109,7 +109,7 @@ const InstantMessaging: React.FC = () => {
             setConversationLoading(true);
             const messages: MessageData[] = await invoke('get_messages_for_conversation', { token, conversationId });
             console.log("messages: ", messages);
-            setMessages(messages);
+            setMessages(messages.reverse());
         } catch (error) {
             console.error("Error while fetching messages for conversation: ", error);
         } finally {
@@ -169,7 +169,7 @@ const InstantMessaging: React.FC = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', height: '100%', borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+        <Box sx={{ display: 'flex', height: '100%', borderRadius: 2, overflow: 'hidden', boxShadow: 3, maxHeight: '40rem' }}>
             {/* Conversation sidebar */}
             <Box sx={{ width: 300, borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
