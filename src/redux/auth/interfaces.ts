@@ -1,7 +1,7 @@
 // src/redux/auth/interfaces.ts
 
 export interface UserInterface {
-    user_id: string;
+    user_id: number;
     role: string;
     first_name: string;
     last_name: string;

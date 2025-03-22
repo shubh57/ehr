@@ -6,17 +6,17 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use crate::db::DatabaseState;
-use jsonwebtoken::{encode, Header, EncodingKey};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
-    user_id: i32,
-    role: String,
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String,
-    created_at: Option<DateTime<Utc>>
+    pub user_id: i32,
+    pub role: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String,
+    pub created_at: Option<DateTime<Utc>>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,7 +42,7 @@ pub struct LoginResponse {
 
 fn create_jwt(user: &User, secret: &[u8]) -> Result<String, jsonwebtoken::errors::Error> {
     let expiration = Utc::now()
-        .checked_sub_signed(Duration::hours(24))
+        .checked_add_signed(Duration::hours(24))
         .expect("Valid timestamp")
         .timestamp() as usize;
 
@@ -52,6 +52,22 @@ fn create_jwt(user: &User, secret: &[u8]) -> Result<String, jsonwebtoken::errors
     };
 
     encode(&Header::default(), &claims, &EncodingKey::from_secret(secret))
+}
+
+fn decode_jwt(token: &str, secret: &[u8]) -> Result<Claims, String> {
+    decode::<Claims>(token, &DecodingKey::from_secret(secret), &Validation::default())
+        .map(|token_data| token_data.claims)
+        .map_err(|e| format!("Error while decoding token: {}", e))
+}
+
+pub fn get_user_from_token(token: String) -> Result<User, String> {
+    let encryption_key = match std::env::var("ENCRYPTION_KEY") {
+        Ok(key) => key,
+        Err(_err) => "".to_string()
+    };
+
+    let claims = decode_jwt(&token, encryption_key.as_bytes())?;
+    Ok(claims.user)
 }
 
 #[tauri::command]

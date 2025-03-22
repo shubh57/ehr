@@ -11,8 +11,10 @@ pub async fn setup_conversations_table(pool: &sqlx::Pool<sqlx::Postgres>) -> sql
             user1 INT REFERENCES users(user_id) ON DELETE CASCADE,
             user2 INT REFERENCES users(user_id) ON DELETE CASCADE,
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT unique_conversation UNIQUE (user1, user2)
+            CONSTRAINT unique_conversation UNIQUE (user1, user2),
+            CONSTRAINT user_order CHECK (user1 < user2)
         );
+        CREATE INDEX idx_conversation_users ON conversations (user1, user2);
     "#;
 
     pool.execute(conversation_query).await?;
@@ -30,6 +32,8 @@ pub async fn setup_messages_table(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Re
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
         CREATE INDEX idx_messages_conversation ON messages (conversation_id, created_at DESC);
+        ALTER TABLE conversations
+        ADD last_message INT REFERENCES messages(message_id);
     "#;
 
     pool.execute(messages_query).await?;
@@ -47,6 +51,7 @@ pub async fn setup_message_status_table(pool: &sqlx::Pool<sqlx::Postgres>) -> sq
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
         CREATE INDEX idx_message_status_user ON message_status (recipient_id, status);
+        CREATE INDEX idx_message_status_message ON message_status (message_id);
     "#;
 
     pool.execute(message_status_query).await?;
@@ -71,7 +76,7 @@ pub async fn setup_files_table(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Resul
     Ok(())
 }
 
-pub async fn delete_messaing_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
+pub async fn delete_messaging_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
     let drop_query = r#"
         DROP TABLE IF EXISTS files;
         DROP TABLE IF EXISTS message_status;
@@ -85,7 +90,7 @@ pub async fn delete_messaing_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::
 }
 
 pub async fn setup_messaging_tables(pool: &sqlx::Pool<sqlx::Postgres>) -> sqlx::Result<()> {
-    delete_messaing_tables(pool).await?;
+    delete_messaging_tables(pool).await?;
 
     setup_conversations_table(pool).await?;
     setup_messages_table(pool).await?;

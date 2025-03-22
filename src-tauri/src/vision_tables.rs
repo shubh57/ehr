@@ -193,6 +193,7 @@ pub async fn setup_vision_tables(
     pool: &sqlx::Pool<sqlx::Postgres>,
     dummy_data: bool,
 ) -> sqlx::Result<()> {
+    delete_vision_tables(pool).await?;
     setup_vision_table(pool, dummy_data).await?;
     setup_refraction_table(pool, dummy_data).await?;
     setup_eye_measurement_table(pool, dummy_data).await?;

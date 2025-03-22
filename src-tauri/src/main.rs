@@ -19,7 +19,7 @@ fn main() {
         }
     } else {
         if let Err(err) = dotenv::from_filename(".env.production") {
-            std::env::set_var("DATABASE_URL", "postgres://postgres:z0ayBKl4ZOYvhAgzmwyj@ehrportal.clckceueo5iv.ap-south-1.rds.amazonaws.com:5432/ehrportal");
+            std::env::set_var("DATABASE_URL", "postgresql://shubh:DBKyQI4S6MTIwqXdg7dKGb0pkWH2gbpD@dpg-cvej4hrtq21c73eelr3g-a.singapore-postgres.render.com/ehrportal");
             std::env::set_var("ENCRYPTION_KEY", "qDFwNcXiGD3XPjfzFzfpUvh0FW10qHzf");
             eprintln!("Error while loading env: {}", err);
         }

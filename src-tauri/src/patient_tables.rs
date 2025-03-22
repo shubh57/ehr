@@ -257,6 +257,7 @@ pub async fn setup_procedures_table(pool: &sqlx::Pool<sqlx::Postgres>, dummy_dat
 }
 
 pub async fn setup_all_patient_tables(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bool) -> sqlx::Result<()> {
+    delete_patient_tables(pool).await?;
     setup_patients_table(pool, dummy_data).await?;
     setup_procedures_table(pool, dummy_data).await?;
     setup_patient_activity_table(pool, dummy_data).await?;

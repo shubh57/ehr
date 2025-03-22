@@ -110,7 +110,7 @@ const SignupPage: React.FC = () => {
                 isClosable: true,
                 position: 'top',
             });
-            // Optionally, dispatch an action or redirect the user after successful signup
+            navigate('/login');
         } catch (error) {
             console.error('Error while signing up:', error);
             toast({

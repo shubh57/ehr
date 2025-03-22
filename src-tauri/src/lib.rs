@@ -8,7 +8,9 @@ use tokio::sync::Mutex;
 
 // Modules
 pub mod db;
+pub mod auth;
 pub mod patients;
+pub mod doctors;
 pub mod vision;
 pub mod file;
 pub mod messaging;
@@ -16,7 +18,6 @@ pub mod common_tables;
 pub mod patient_tables;
 pub mod vision_tables;
 pub mod messaging_tables;
-pub mod auth;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -34,34 +35,11 @@ pub fn run() {
                     Ok(pool) => {
                         eprintln!("Database connected successfully.");
 
-                        // match vision_tables::delete_vision_tables(&pool).await {
-                        //     Ok(_) => eprintln!("Deleted vision table"),
-                        //     Err(err) => {
-                        //         eprintln!("Error while deleting vision table: {}", err);
-                        //         std::process::exit(1);
-                        //     }
-                        // }
-
-                        // match patient_tables::delete_patient_tables(&pool).await {
-                        //     Ok(_) => eprintln!("Deleted patient table"),
-                        //     Err(err) => {
-                        //         eprintln!("Error while deleting vision table: {}", err);
-                        //         std::process::exit(1);
-                        //     }
-                        // }
-
-                        // match common_tables::delete_common_tables(&pool).await {
-                        //     Ok(_) => eprintln!("Deleted common table"),
-                        //     Err(err) => {
-                        //         eprintln!("Error while deleting vision table: {}", err);
-                        //         std::process::exit(1);
-                        //     }
-                        // }
-
                         // match common_tables::setup_all_tables(&pool, true).await {
-                        //     Ok(_) => eprintln!("Setup common tables"),
+                        //     Ok(_) => eprintln!("Setup common tables."),
                         //     Err(err) => {
-                        //         eprintln!("Error while setting up common tables: {}", err)
+                        //         eprintln!("Error while setting up common tables.");
+                        //         std::process::exit(1);
                         //     }
                         // }
 
@@ -112,13 +90,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_log::Builder::new()
-        .target(tauri_plugin_log::Target::new(
-          tauri_plugin_log::TargetKind::LogDir {
-            file_name: Some("logs".to_string()),
-          },
-        ))
-        .build())
+        // .plugin(tauri_plugin_log::Builder::new()
+        // .target(tauri_plugin_log::Target::new(
+        //   tauri_plugin_log::TargetKind::LogDir {
+        //     file_name: Some("logs".to_string()),
+        //   },
+        // ))
+        // .build())
         .invoke_handler(tauri::generate_handler![
             greet,
             file::save_pdf_file,
@@ -141,7 +119,13 @@ pub fn run() {
             vision::update_vision_data,
             vision::update_refraction_data,
             vision::get_patient_eye_measurement_data,
-            vision::update_patient_eye_measurement_data
+            vision::update_patient_eye_measurement_data,
+            messaging::send_message,
+            messaging::poll_messages,
+            messaging::get_messages_for_conversation,
+            messaging::get_conversation,
+            messaging::get_all_conversations,
+            doctors::get_all_doctors
         ])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");

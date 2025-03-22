@@ -9,6 +9,7 @@ import PatientList from '../components/PatientList';
 import UpdateComponent from '../components/UpdateComponent';
 import Header from '../components/doctor-dashboard/Header';
 import WeatherWidget from '../components/doctor-dashboard/WeatherWidget';
+import InstantMessaging from '../components/doctor-dashboard/InstantMessaging';
 
 // A common style for container boxes to simulate a card-like appearance.
 const boxStyle = {
@@ -20,29 +21,29 @@ const boxStyle = {
     gap: '1rem',
 };
 
-// InstantMessages: Shows dummy chat messages with sender and content.
-const InstantMessages = () => {
-    const messages = [
-        { id: 1, sender: 'Dr. Smith', content: 'Patient X case file attached (MR12345)' },
-        { id: 2, sender: 'Dr. Adams', content: 'Referral for Patient Y – please check the case file.' },
-    ];
-    return (
-        <Box sx={boxStyle}>
-            <Box display='flex' alignItems='center' mb={1}>
-                <Typography variant='h6' ml={1}>
-                    Instant Messages
-                </Typography>
-            </Box>
-            <List>
-                {messages.map((msg) => (
-                    <ListItem key={msg.id} divider onClick={() => alert(`Message from ${msg.sender}`)} style={{ cursor: 'pointer' }}>
-                        <ListItemText primary={msg.sender} secondary={msg.content} />
-                    </ListItem>
-                ))}
-            </List>
-        </Box>
-    );
-};
+// // InstantMessages: Shows dummy chat messages with sender and content.
+// const InstantMessages = () => {
+//     const messages = [
+//         { id: 1, sender: 'Dr. Smith', content: 'Patient X case file attached (MR12345)' },
+//         { id: 2, sender: 'Dr. Adams', content: 'Referral for Patient Y – please check the case file.' },
+//     ];
+//     return (
+//         <Box sx={boxStyle}>
+//             <Box display='flex' alignItems='center' mb={1}>
+//                 <Typography variant='h6' ml={1}>
+//                     Instant Messages
+//                 </Typography>
+//             </Box>
+//             <List>
+//                 {messages.map((msg) => (
+//                     <ListItem key={msg.id} divider onClick={() => alert(`Message from ${msg.sender}`)} style={{ cursor: 'pointer' }}>
+//                         <ListItemText primary={msg.sender} secondary={msg.content} />
+//                     </ListItem>
+//                 ))}
+//             </List>
+//         </Box>
+//     );
+// };
 
 // Alerts: Displays both emergency and normal alerts.
 const Alerts = () => {
@@ -201,7 +202,7 @@ const Dashboard = () => {
             <Box display='flex' flexDirection={{ xs: 'column', md: 'row' }} gap={2} mt={2}>
                 <Box flex={1}>
                     <WeatherWidget />
-                    <InstantMessages />
+                    <InstantMessaging />
                 </Box>
                 <Box flex={1}>
                     <Alerts />

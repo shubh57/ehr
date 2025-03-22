@@ -40,6 +40,7 @@ pub async fn setup_users_table(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bo
 
 // Function to setup all common tables
 pub async fn setup_all_tables(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: bool) -> sqlx::Result<()> {
+    delete_common_tables(pool).await?;
     setup_users_table(pool, dummy_data).await?;
 
     Ok(())
