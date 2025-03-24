@@ -13,11 +13,15 @@ pub mod patients;
 pub mod doctors;
 pub mod vision;
 pub mod file;
+pub mod alert;
 pub mod messaging;
+pub mod appointment;
 pub mod common_tables;
 pub mod patient_tables;
 pub mod vision_tables;
 pub mod messaging_tables;
+pub mod alert_tables;
+pub mod appointment_tables;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -61,6 +65,22 @@ pub fn run() {
                         //     Ok(_) => eprintln!("Setup messaging tables"),
                         //     Err(err) => {
                         //         eprintln!("Error while setting up messaging tables: {}", err)
+                        //     }
+                        // }
+
+                        // match alert_tables::create_alerts_table(&pool).await {
+                        //     Ok(_) => eprintln!("Setup alert tables"),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up alert tables: {}", err);
+                        //         std::process::exit(1);
+                        //     }
+                        // }
+
+                        // match appointment_tables::setup_all_appointment_tables(&pool).await {
+                        //     Ok(_) => eprintln!("Setup appointment tables."),
+                        //     Err(err) => {
+                        //         eprintln!("Error while setting up appointment tables: {}", err);
+                        //         std::process::exit(1);
                         //     }
                         // }
 
@@ -125,7 +145,11 @@ pub fn run() {
             messaging::get_messages_for_conversation,
             messaging::get_conversation,
             messaging::get_all_conversations,
-            doctors::get_all_doctors
+            doctors::get_all_doctors,
+            alert::get_alerts,
+            alert::create_alert,
+            appointment::get_appointments,
+            appointment::create_appointment
         ])
         .run(tauri::generate_context!())
         .expect("Error while running tauri application.");

@@ -25,11 +25,11 @@ const UpdateComponent: React.FC = () => {
             try {
                 const update = await check();
                 console.log('Update: ', update);
-                info("Update");
+                info('Update');
                 if (update) {
                     setUpdateInfo(update as UpdateInfo);
                     info(update.version);
-                    info(update.body || "");
+                    info(update.body || '');
                     setSnackbarOpen(true);
                 }
             } catch (error) {

@@ -10,6 +10,8 @@ import UpdateComponent from '../components/UpdateComponent';
 import Header from '../components/doctor-dashboard/Header';
 import WeatherWidget from '../components/doctor-dashboard/WeatherWidget';
 import InstantMessaging from '../components/doctor-dashboard/InstantMessaging';
+import Alerts from '../components/doctor-dashboard/Alerts';
+import Appointments from '../components/doctor-dashboard/Appointments';
 
 // A common style for container boxes to simulate a card-like appearance.
 const boxStyle = {
@@ -19,54 +21,6 @@ const boxStyle = {
     backgroundColor: '#F5F7FA',
     borderRadius: '8px',
     gap: '1rem',
-};
-
-// // InstantMessages: Shows dummy chat messages with sender and content.
-// const InstantMessages = () => {
-//     const messages = [
-//         { id: 1, sender: 'Dr. Smith', content: 'Patient X case file attached (MR12345)' },
-//         { id: 2, sender: 'Dr. Adams', content: 'Referral for Patient Y – please check the case file.' },
-//     ];
-//     return (
-//         <Box sx={boxStyle}>
-//             <Box display='flex' alignItems='center' mb={1}>
-//                 <Typography variant='h6' ml={1}>
-//                     Instant Messages
-//                 </Typography>
-//             </Box>
-//             <List>
-//                 {messages.map((msg) => (
-//                     <ListItem key={msg.id} divider onClick={() => alert(`Message from ${msg.sender}`)} style={{ cursor: 'pointer' }}>
-//                         <ListItemText primary={msg.sender} secondary={msg.content} />
-//                     </ListItem>
-//                 ))}
-//             </List>
-//         </Box>
-//     );
-// };
-
-// Alerts: Displays both emergency and normal alerts.
-const Alerts = () => {
-    const alerts = [
-        { id: 1, type: 'Emergency', message: 'Patient in critical condition in room 5.' },
-        { id: 2, type: 'Normal', message: 'New referral received from Dr. Adams.' },
-    ];
-    return (
-        <Box sx={boxStyle}>
-            <Box display='flex' alignItems='center' mb={1}>
-                <Typography variant='h6' ml={1}>
-                    Alerts
-                </Typography>
-            </Box>
-            <List>
-                {alerts.map((alert) => (
-                    <ListItem key={alert.id} divider onClick={() => console.log(`Alert: ${alert.message}`)} style={{ cursor: 'pointer' }}>
-                        <ListItemText primary={`${alert.type} Alert`} secondary={alert.message} />
-                    </ListItem>
-                ))}
-            </List>
-        </Box>
-    );
 };
 
 // PatientWaitlist: Shows a scrollable list of patients waiting for consultation.
@@ -196,17 +150,23 @@ const SupportButtons = () => {
 const Dashboard = () => {
     const theme = useTheme();
     return (
-        <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', p: 2, width: '100%' }}>
+        <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '80vh', p: 2, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+            <Box
+                sx={{
+                    maxHeight: 'fit-content',
+                }}
+            >
             <UpdateComponent />
             <Header />
-            <Box display='flex' flexDirection={{ xs: 'column', md: 'row' }} gap={2} mt={2}>
+            </Box>
+            <Box display='flex' flexDirection={{ xs: 'column', md: 'row' }} gap={2} height='50rem'>
                 <Box flex={1}>
                     <WeatherWidget />
                     <InstantMessaging />
                 </Box>
                 <Box flex={1}>
                     <Alerts />
-                    <YourDay />
+                    <Appointments />
                 </Box>
                 <Box flex={1}>
                     <PatientList />
@@ -214,7 +174,9 @@ const Dashboard = () => {
                     <DiagnosticNotifications />
                 </Box>
             </Box>
+            <Box>
             <SupportButtons />
+            </Box>
         </Box>
     );
 };
