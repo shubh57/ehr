@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Chip, useTheme } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'react-query';
 
 export type PatientActivity = {
     activity_id: number;
@@ -14,30 +15,28 @@ export type PatientActivity = {
 
 interface PatientActivityCardProps {
     patient_id: number;
-}
+};
+
+const fetchPatientActivityData = async (
+    patientId: number
+): Promise<PatientActivity[]> => {
+    return await invoke<PatientActivity[]>('get_patient_activity_data', {patientId});
+};
 
 const PatientActivityCard: React.FC<PatientActivityCardProps> = ({ patient_id }) => {
     const theme = useTheme();
     const navigate = useNavigate();
     const [patientActivityData, setPatientActivityData] = useState<PatientActivity[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
 
-    const fetchPatientActivityData = async () => {
-        try {
-            setIsLoading(true);
-            const data: PatientActivity[] = await invoke('get_patient_activity_data', { patientId: patient_id });
-            setPatientActivityData(data);
-        } catch (error) {
-            console.error('Error while fetching patient activity data:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const patientActivityQuery = useQuery<PatientActivity[], Error>(['patient_activity', patient_id], () => fetchPatientActivityData(patient_id));
+    const isLoading = patientActivityQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientActivityData();
-    }, [patient_id]);
+        if (patientActivityQuery.data) {
+            setPatientActivityData(patientActivityQuery.data);
+        }
+    }, [patientActivityQuery.data]);
 
     const getStatusColor = (status: string) => {
         switch (status) {

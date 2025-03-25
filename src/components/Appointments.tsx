@@ -28,6 +28,7 @@ import {
     MedicalInformation as MedicalIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'react-query';
 
 export type AppointmentData = {
     patient_id: number;
@@ -47,19 +48,16 @@ export type AppointmentData = {
     activity_created_at: string;
 };
 
+const fetchAppointmentData = async (): Promise<AppointmentData[]> => {
+    return await invoke<AppointmentData[]>('get_appointment_data');
+}
+
 const Appointments = () => {
     const [appointmentData, setAppointmentData] = useState<AppointmentData[]>([]);
     const theme = useTheme();
     const navigate = useNavigate();
 
-    const fetchAppointmentData = async () => {
-        try {
-            const data: AppointmentData[] = await invoke('get_appointment_data');
-            setAppointmentData(data);
-        } catch (error) {
-            console.error('Error fetching appointment data:', error);
-        }
-    };
+    const appointmentQuery = useQuery<AppointmentData[], Error>(['appointment_data'], () => fetchAppointmentData());
 
     const calculateAge = (birthDate: Date) => {
         const today = new Date();
@@ -72,8 +70,10 @@ const Appointments = () => {
     };
 
     useEffect(() => {
-        fetchAppointmentData();
-    }, []);
+        if (appointmentQuery.data) {
+            setAppointmentData(appointmentQuery.data);
+        }
+    }, [appointmentQuery.data]);
 
     return (
         <Box

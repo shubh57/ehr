@@ -23,6 +23,7 @@ pub async fn setup_vision_table(pool: &sqlx::Pool<sqlx::Postgres>, dummy_data: b
             updated_by INT REFERENCES users(user_id) ON DELETE CASCADE DEFAULT NULL,
             CONSTRAINT unique_patient_vision UNIQUE (patient_id, side, value_type)
         );
+        CREATE INDEX idx_vision_patient_side_value_vision ON vision(patient_id, side, value_type);
     "#;
     pool.execute(vision_query).await?;
 
@@ -86,6 +87,7 @@ pub async fn setup_refraction_table(pool: &sqlx::Pool<sqlx::Postgres>, dummy_dat
             updated_by INT REFERENCES users(user_id) ON DELETE CASCADE DEFAULT NULL,
             CONSTRAINT unique_patient_refraction UNIQUE (patient_id, side, value_type, vision_type)
         );
+        CREATE INDEX idx_refraction_patient_side_value_vision ON refraction(patient_id, side, value_type, vision_type);
     "#;
     pool.execute(refraction_query).await?;
 
@@ -145,6 +147,7 @@ pub async fn setup_eye_measurement_table(pool: &sqlx::Pool<sqlx::Postgres>, dumm
             updated_by INT REFERENCES users(user_id) ON DELETE CASCADE DEFAULT NULL,
             CONSTRAINT unique_patient_eye_measurement UNIQUE (patient_id, side)
         );
+        CREATE INDEX idx_eye_measurement_patient_side_value_vision ON eye_measurement(patient_id, side);
     "#;
     pool.execute(refraction_query).await?;
 

@@ -1,8 +1,15 @@
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 
-const CustomToggleButton = ({ selected, onChange, options }: { selected: string; onChange: (event: React.MouseEvent<HTMLElement>, newRange: string | null) => void, options: { label: string; value: string; }[] }) => {
-
+const CustomToggleButton = ({
+    selected,
+    onChange,
+    options,
+}: {
+    selected: string;
+    onChange: (event: React.MouseEvent<HTMLElement>, newRange: string | null) => void;
+    options: { label: string; value: string }[];
+}) => {
     return (
         <ToggleButtonGroup
             value={selected}
@@ -21,7 +28,7 @@ const CustomToggleButton = ({ selected, onChange, options }: { selected: string;
                     value={option.value}
                     sx={{
                         textTransform: 'none',
-                        width: `${100/options.length}%`,
+                        width: `${100 / options.length}%`,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',

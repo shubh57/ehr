@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { Send as SendIcon, Add as AddIcon } from '@mui/icons-material';
 import { ArrowBack } from '@mui/icons-material';
+import { useQuery, useQueryClient } from 'react-query';
 
 // Type definitions remain unchanged
 export type Conversation = {
@@ -55,14 +56,25 @@ export type MessageData = {
     created_at: string;
 };
 
+const fetchDoctors = async (token: string): Promise<UserInterface[]> => {
+    return await invoke<UserInterface[]>('get_all_doctors', { token });
+};
+
+const fetchConversations = async (token: string): Promise<Conversation[]> => {
+    return await invoke<Conversation[]>('get_all_conversations', { token });
+};
+
+const fetchMessages = async (token: string, conversationId: number): Promise<MessageData[]> => {
+    return await invoke<MessageData[]>('get_messages_for_conversation', { token, conversationId });
+};
+
 const InstantMessaging: React.FC = () => {
     const theme = useTheme();
     const toast = useToast();
+    const queryClient = useQueryClient();
     const { user, token } = useSelector((state: RootState) => state.auth);
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [messageSending, setMessageSending] = useState<boolean>(false);
-    const [conversationLoading, setConversationLoading] = useState<boolean>(false);
     const [doctors, setDoctors] = useState<UserInterface[]>([]);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>();
@@ -73,29 +85,34 @@ const InstantMessaging: React.FC = () => {
         return messages.some((msg) => msg.conversation_id === convId && msg.recipient_id === user?.user_id && msg.status !== 'read');
     };
 
+    const doctorsQuery = useQuery<UserInterface[], Error>(['all_doctors'], () => fetchDoctors(token || ""));
+    const conversationQuery = useQuery<Conversation[], Error>(['all_conversations', user?.user_id], () => fetchConversations(token || ""));
+    const messageQuery = useQuery<MessageData[], Error>(['messages_conversation', selectedConversation?.conversation_id], () => fetchMessages(token || "", selectedConversation?.conversation_id || 0));
+
+    const isLoading = doctorsQuery.isLoading || conversationQuery.isLoading;
+    const conversationLoading = messageQuery.isLoading;
+
     useEffect(() => {
-        fetchDoctors();
-        fetchConversations();
+        if (doctorsQuery.data) {
+            setDoctors(doctorsQuery.data.filter(doctor => doctor.user_id != user?.user_id));
+        }
+    }, [doctorsQuery.data]);
+
+    useEffect(() => {
+        if (conversationQuery.data) {
+            setConversations(conversationQuery.data);
+        }
+    }, [conversationQuery.data]);
+
+    useEffect(() => {
         pollMessages();
     }, []);
 
     useEffect(() => {
-        if (selectedConversation) {
-            fetchMessages(selectedConversation?.conversation_id);
+        if (selectedConversation && messageQuery.data) {
+            setMessages(messageQuery.data);
         }
-    }, [selectedConversation]);
-
-    const fetchDoctors = async () => {
-        try {
-            setIsLoading(true);
-            const doctorList: UserInterface[] = await invoke('get_all_doctors', { token });
-            setDoctors(doctorList.filter((docter) => docter.user_id !== user?.user_id));
-        } catch (error) {
-            console.error('Error while fetching doctor data: ', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }, [selectedConversation, messageQuery]);
 
     const startNewConversation = async (doctorId: number) => {
         try {
@@ -115,31 +132,6 @@ const InstantMessaging: React.FC = () => {
         }
     };
 
-    const fetchMessages = async (conversationId: number) => {
-        try {
-            setConversationLoading(true);
-            const messages: MessageData[] = await invoke('get_messages_for_conversation', { token, conversationId });
-            console.log('messages: ', messages);
-            setMessages(messages.reverse());
-        } catch (error) {
-            console.error('Error while fetching messages for conversation: ', error);
-        } finally {
-            setConversationLoading(false);
-        }
-    };
-
-    const fetchConversations = async () => {
-        try {
-            setIsLoading(true);
-            const conversations: Conversation[] = await invoke('get_all_conversations', { token });
-            setConversations(conversations);
-        } catch (error) {
-            console.error('Error while fetching conversations: ', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const sendMessage = async () => {
         try {
             setMessageSending(true);
@@ -147,12 +139,11 @@ const InstantMessaging: React.FC = () => {
             if (!newMessage.trim() || !selectedConversation) {
                 throw Error('Please enter a message and select a conversation.');
             }
-            console.log('1');
             const message: Message = await invoke('send_message', { token, conversationId: selectedConversation.conversation_id, content: newMessage });
-            console.log('message: ', message);
             setNewMessage('');
-            fetchMessages(selectedConversation.conversation_id);
-            fetchConversations();
+            
+            queryClient.invalidateQueries(['all_conversations', user?.user_id]);
+            queryClient.invalidateQueries(['messages_conversation', selectedConversation?.conversation_id]);
         } catch (error) {
             console.error('Error while sending message: ', error);
             toast({

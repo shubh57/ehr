@@ -54,12 +54,12 @@ pub fn run() {
                         //     }
                         // }
 
-                        // match vision_tables::setup_vision_tables(&pool, true).await {
-                        //     Ok(_) => eprintln!("Setup vision tables"),
-                        //     Err(err) => {
-                        //         eprintln!("Error while setting up vision table: {}", err)
-                        //     }
-                        // }
+                        match vision_tables::setup_vision_tables(&pool, true).await {
+                            Ok(_) => eprintln!("Setup vision tables"),
+                            Err(err) => {
+                                eprintln!("Error while setting up vision table: {}", err)
+                            }
+                        }
 
                         // match messaging_tables::setup_messaging_tables(&pool).await {
                         //     Ok(_) => eprintln!("Setup messaging tables"),

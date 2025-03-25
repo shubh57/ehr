@@ -19,6 +19,7 @@ import { Person as PersonIcon, EventNote as DateIcon, Assignment as MRIcon, Wc a
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'react-query';
 
 export type Patient = {
     patient_id: number;
@@ -31,11 +32,14 @@ export type Patient = {
     created_at: string;
 };
 
+const fetchPatientsData = async (): Promise<Patient[]> => {
+    return await invoke<Patient[]>('get_patients_data');
+}
+
 const PatientList: React.FC = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const [patientData, setPatientData] = useState<Patient[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
 
     const calculateAge = (dob: string) => {
         const birthDate = new Date(dob);
@@ -48,23 +52,14 @@ const PatientList: React.FC = () => {
         return age;
     };
 
-    const fetchPatientData = async () => {
-        try {
-            setIsLoading(true);
-            console.log('Fetching data...');
-            const patients: Patient[] = await invoke('get_patients_data');
-            console.log('patients: ', patients);
-            setPatientData(patients);
-        } catch (error) {
-            console.error('Error fetching patient data:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const allPatientsQuery = useQuery<Patient[], Error>(['all_patients'], () => fetchPatientsData());
+    const isLoading = allPatientsQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientData();
-    }, []);
+        if (allPatientsQuery.data) {
+            setPatientData(allPatientsQuery.data);
+        }
+    }, [allPatientsQuery.data]);
 
     // Modern gender-based colors
     const genderColors = {

@@ -150,14 +150,24 @@ const SupportButtons = () => {
 const Dashboard = () => {
     const theme = useTheme();
     return (
-        <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '80vh', p: 2, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+        <Box
+            sx={{
+                backgroundColor: theme.palette.background.default,
+                minHeight: '80vh',
+                p: 2,
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-around',
+            }}
+        >
             <Box
                 sx={{
                     maxHeight: 'fit-content',
                 }}
             >
-            <UpdateComponent />
-            <Header />
+                <UpdateComponent />
+                <Header />
             </Box>
             <Box display='flex' flexDirection={{ xs: 'column', md: 'row' }} gap={2} height='50rem'>
                 <Box flex={1}>
@@ -175,7 +185,7 @@ const Dashboard = () => {
                 </Box>
             </Box>
             <Box>
-            <SupportButtons />
+                <SupportButtons />
             </Box>
         </Box>
     );

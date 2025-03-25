@@ -6,6 +6,8 @@ import { Box, CircularProgress, Typography, IconButton, Divider, CardContent, Ca
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
 import { Lock, LockOpen } from '@mui/icons-material';
+import ShimmerPatientRefraction from './ShimmerPatientRefraction';
+import { useQuery, useQueryClient } from 'react-query';
 
 export type RefractionData = {
     vision_id: number;
@@ -42,121 +44,107 @@ const generateAxisOptions = () => {
 const sphericalCylindricalOptions = generateSphericalCylindricalOptions();
 const axisOptions = generateAxisOptions();
 
+const fetchRefractionData = async (patient_id: number, side: string, value_type: string, vision_type: string): Promise<RefractionData> => {
+    return await invoke<RefractionData>('get_refraction_data', {
+        query: { patient_id, side, value_type, vision_type },
+    });
+};
+
 const PatientRefraction: React.FC<{
     patient_id: number;
     side: string;
 }> = ({ patient_id, side }) => {
     const toast = useToast();
+    const queryClient = useQueryClient();
 
-    // Distance Vision (DV) values
+    // Local state for editing values
     const [sphericalDV, setSphericalDV] = useState<string>('');
     const [cylindricalDV, setCylindricalDV] = useState<string>('');
     const [axisDV, setAxisDV] = useState<string>('');
 
-    // Near Vision (NV) values
     const [sphericalNV, setSphericalNV] = useState<string>('');
     const [cylindricalNV, setCylindricalNV] = useState<string>('');
     const [axisNV, setAxisNV] = useState<string>('');
 
-    // Distance Vision (DV) values (Dilated)
     const [dilatedSphericalDV, setDilatedSphericalDV] = useState<string>('');
     const [dilatedCylindricalDV, setDilatedCylindricalDV] = useState<string>('');
     const [dilatedAxisDV, setDilatedAxisDV] = useState<string>('');
 
-    // Near Vision (NV) values (Dilated)
     const [dilatedSphericalNV, setDilatedSphericalNV] = useState<string>('');
     const [dilatedCylindricalNV, setDilatedCylindricalNV] = useState<string>('');
     const [dilatedAxisNV, setDilatedAxisNV] = useState<string>('');
 
-    const [refractionData, setRefractionData] = useState<RefractionData>();
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    // Used for toggling edit mode and update loading state.
     const [isLocked, setIsLocked] = useState<boolean>(true);
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [updateLoading, setUpdateLoading] = useState<boolean>(false);
 
-    const fetchRefractionData = async (value_type: string, vision_type: string) => {
-        try {
-            setIsLoading(true);
+    // Create queries for each combination.
+    const udDVQuery = useQuery<RefractionData, Error>(['refraction', patient_id, side, 'UD', 'DV'], () => fetchRefractionData(patient_id, side, 'UD', 'DV'));
+    const dlDVQuery = useQuery<RefractionData, Error>(['refraction', patient_id, side, 'DL', 'DV'], () => fetchRefractionData(patient_id, side, 'DL', 'DV'));
+    const udNVQuery = useQuery<RefractionData, Error>(['refraction', patient_id, side, 'UD', 'NV'], () => fetchRefractionData(patient_id, side, 'UD', 'NV'));
+    const dlNVQuery = useQuery<RefractionData, Error>(['refraction', patient_id, side, 'DL', 'NV'], () => fetchRefractionData(patient_id, side, 'DL', 'NV'));
 
-            // Fetch Refraction data
-            const data: RefractionData = await invoke('get_refraction_data', {
-                query: {
-                    patient_id: patient_id,
-                    side: side,
-                    value_type: value_type,
-                    vision_type: vision_type,
-                },
-            });
+    // Derive a global loading flag from all queries.
+    const isLoading = udDVQuery.isLoading || dlDVQuery.isLoading || udNVQuery.isLoading || dlNVQuery.isLoading;
 
-            setRefractionData(data);
-
-            switch (value_type) {
-                case 'UD': {
-                    switch (vision_type) {
-                        case 'DV': {
-                            setSphericalDV(data?.spherical || 'N/A');
-                            setCylindricalDV(data?.cylindrical || 'N/A');
-                            setAxisDV(data?.axis || 'N/A');
-                            break;
-                        }
-                        case 'NV': {
-                            setSphericalNV(data?.spherical || 'N/A');
-                            setCylindricalNV(data?.cylindrical || 'N/A');
-                            setAxisNV(data?.axis || 'N/A');
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case 'DL': {
-                    switch (vision_type) {
-                        case 'DV': {
-                            setDilatedSphericalDV(data?.spherical || 'N/A');
-                            setDilatedCylindricalDV(data?.cylindrical || 'N/A');
-                            setDilatedAxisDV(data?.axis || 'N/A');
-                            break;
-                        }
-                        case 'NV': {
-                            setDilatedSphericalNV(data?.spherical || 'N/A');
-                            setDilatedCylindricalNV(data?.cylindrical || 'N/A');
-                            setDilatedAxisNV(data?.axis || 'N/A');
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error while fetching refraction data: ', error);
-            toast({
-                title: `Error while fetching refraction data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
+    // When data is successfully fetched, initialize the local state
+    useEffect(() => {
+        if (udDVQuery.data) {
+            setSphericalDV(udDVQuery.data.spherical || 'N/A');
+            setCylindricalDV(udDVQuery.data.cylindrical || 'N/A');
+            setAxisDV(udDVQuery.data.axis || 'N/A');
         }
-    };
+    }, [udDVQuery.data]);
 
-    const handleRefractionUpdate = async (value_type: string, vision_type: string) => {
+    useEffect(() => {
+        if (udNVQuery.data) {
+            setSphericalNV(udNVQuery.data.spherical || 'N/A');
+            setCylindricalNV(udNVQuery.data.cylindrical || 'N/A');
+            setAxisNV(udNVQuery.data.axis || 'N/A');
+        }
+    }, [udNVQuery.data]);
+
+    useEffect(() => {
+        if (dlDVQuery.data) {
+            setDilatedSphericalDV(dlDVQuery.data.spherical || 'N/A');
+            setDilatedCylindricalDV(dlDVQuery.data.cylindrical || 'N/A');
+            setDilatedAxisDV(dlDVQuery.data.axis || 'N/A');
+        }
+    }, [dlDVQuery.data]);
+
+    useEffect(() => {
+        if (dlNVQuery.data) {
+            setDilatedSphericalNV(dlNVQuery.data.spherical || 'N/A');
+            setDilatedCylindricalNV(dlNVQuery.data.cylindrical || 'N/A');
+            setDilatedAxisNV(dlNVQuery.data.axis || 'N/A');
+        }
+    }, [dlNVQuery.data]);
+
+    // Update refraction data and then invalidate (refetch) the relevant query
+    const handleRefractionUpdate = async (
+        value_type: string,
+        vision_type: string,
+        params: {
+            spherical: string;
+            cylindrical: string;
+            axis: string;
+        },
+    ) => {
         try {
             setUpdateLoading(true);
-
-            // Update Distance Vision data
             await invoke('update_refraction_data', {
                 patientId: patient_id,
-                spherical: sphericalDV,
-                cylindrical: cylindricalDV,
-                axis: axisDV,
+                spherical: params.spherical,
+                cylindrical: params.cylindrical,
+                axis: params.axis,
                 side: side,
                 valueType: value_type,
                 visionType: vision_type,
                 updatedBy: 1,
             });
-
-            // Refetch data to ensure UI is in sync
-            fetchRefractionData(value_type, vision_type);
+            // Invalidate the corresponding query to refetch updated data
+            queryClient.invalidateQueries(['refraction', patient_id, side, value_type, vision_type]);
         } catch (error) {
             console.error('Error while updating refraction data: ', error);
             toast({
@@ -171,12 +159,29 @@ const PatientRefraction: React.FC<{
         }
     };
 
+    // When locking the component (i.e. finishing editing) update all four types
     const toggleLock = async () => {
         if (!isLocked) {
-            await handleRefractionUpdate('UD', 'DV');
-            await handleRefractionUpdate('DL', 'DV');
-            await handleRefractionUpdate('UD', 'NV');
-            await handleRefractionUpdate('DL', 'NV');
+            await handleRefractionUpdate('UD', 'DV', {
+                spherical: sphericalDV,
+                cylindrical: cylindricalDV,
+                axis: axisDV,
+            });
+            await handleRefractionUpdate('DL', 'DV', {
+                spherical: dilatedSphericalDV,
+                cylindrical: dilatedCylindricalDV,
+                axis: dilatedAxisDV,
+            });
+            await handleRefractionUpdate('UD', 'NV', {
+                spherical: sphericalNV,
+                cylindrical: cylindricalNV,
+                axis: axisNV,
+            });
+            await handleRefractionUpdate('DL', 'NV', {
+                spherical: dilatedSphericalNV,
+                cylindrical: dilatedCylindricalNV,
+                axis: dilatedAxisNV,
+            });
         }
         setIsLocked(!isLocked);
     };
@@ -185,13 +190,7 @@ const PatientRefraction: React.FC<{
         setIsExpanded(!isExpanded);
     };
 
-    useEffect(() => {
-        fetchRefractionData('UD', 'DV');
-        fetchRefractionData('DL', 'DV');
-        fetchRefractionData('UD', 'NV');
-        fetchRefractionData('DL', 'NV');
-    }, []);
-
+    // Helper to render a value or a dropdown depending on the lock state
     const renderValueOrDropdown = (value: string, setValue: (value: string) => void, options: string[]) => {
         if (isLocked) {
             return (
@@ -240,7 +239,7 @@ const PatientRefraction: React.FC<{
     return (
         <Box display='flex' justifyContent='center' width='18rem'>
             {isLoading ? (
-                <CircularProgress size={24} />
+                <ShimmerPatientRefraction />
             ) : (
                 <Card
                     onDoubleClick={handleDoubleClick}
@@ -288,14 +287,11 @@ const PatientRefraction: React.FC<{
                                 <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                                     DV
                                 </Typography>
-
                                 <Box display='flex' justifyContent='space-around' alignItems='center'>
                                     {renderValueOrDropdown(sphericalDV, setSphericalDV, sphericalCylindricalOptions)}
                                     {renderValueOrDropdown(cylindricalDV, setCylindricalDV, sphericalCylindricalOptions)}
                                     {renderValueOrDropdown(axisDV, setAxisDV, axisOptions)}
                                 </Box>
-
-                                {/* Vertical Dividers */}
                                 <Divider
                                     orientation='vertical'
                                     sx={{
@@ -324,14 +320,11 @@ const PatientRefraction: React.FC<{
                                 <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                                     NV
                                 </Typography>
-
                                 <Box display='flex' justifyContent='space-around' alignItems='center'>
                                     {renderValueOrDropdown(sphericalNV, setSphericalNV, sphericalCylindricalOptions)}
                                     {renderValueOrDropdown(cylindricalNV, setCylindricalNV, sphericalCylindricalOptions)}
                                     {renderValueOrDropdown(axisNV, setAxisNV, axisOptions)}
                                 </Box>
-
-                                {/* Vertical Dividers */}
                                 <Divider
                                     orientation='vertical'
                                     sx={{
@@ -353,7 +346,7 @@ const PatientRefraction: React.FC<{
                             </Box>
 
                             {/* Last Updated Info */}
-                            {refractionData && (
+                            {(udDVQuery.data || dlDVQuery.data || udNVQuery.data || dlNVQuery.data) && (
                                 <Typography
                                     variant='caption'
                                     color='text.secondary'
@@ -365,35 +358,27 @@ const PatientRefraction: React.FC<{
                                     }}
                                 >
                                     Last updated:{' '}
-                                    {refractionData.updated_at
-                                        ? new Date(refractionData.updated_at.toString()).toLocaleString('en-GB', {
+                                    {udDVQuery.data?.updated_at || udDVQuery.data?.created_at
+                                        ? new Date((udDVQuery.data?.updated_at || udDVQuery.data?.created_at).toString()).toLocaleString('en-GB', {
                                               day: '2-digit',
                                               month: '2-digit',
                                               year: '2-digit',
                                               hour: '2-digit',
                                               minute: '2-digit',
                                           })
-                                        : refractionData.created_at
-                                          ? new Date(refractionData.created_at.toString()).toLocaleString('en-GB', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: '2-digit',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })
-                                          : 'N/A'}
+                                        : 'N/A'}
                                 </Typography>
                             )}
                         </Box>
+
                         {isExpanded && (
                             <Box display='flex' flexDirection='column' gap={1} mt={2}>
-                                {/* Header with Lock/Unlock Button */}
+                                {/* Header for Dilated Values */}
                                 <Box display='flex' justifyContent='space-between' alignItems='center'>
                                     <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                                         Refraction Values (After Dilation)
                                     </Typography>
                                 </Box>
-
                                 {/* Column Headers */}
                                 <Box display='flex' justifyContent='space-around'>
                                     <Typography variant='body2' fontWeight='bold' color='text.secondary' sx={{ flex: 1, textAlign: 'center' }}>
@@ -406,20 +391,16 @@ const PatientRefraction: React.FC<{
                                         AXIS
                                     </Typography>
                                 </Box>
-
-                                {/* Distance Vision (DV) Values */}
+                                {/* Dilated Distance Vision (DV) Values */}
                                 <Box sx={{ position: 'relative' }}>
                                     <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                                         DV
                                     </Typography>
-
                                     <Box display='flex' justifyContent='space-around' alignItems='center'>
                                         {renderValueOrDropdown(dilatedSphericalDV, setDilatedSphericalDV, sphericalCylindricalOptions)}
                                         {renderValueOrDropdown(dilatedCylindricalDV, setDilatedCylindricalDV, sphericalCylindricalOptions)}
                                         {renderValueOrDropdown(dilatedAxisDV, setDilatedAxisDV, axisOptions)}
                                     </Box>
-
-                                    {/* Vertical Dividers */}
                                     <Divider
                                         orientation='vertical'
                                         sx={{
@@ -439,23 +420,17 @@ const PatientRefraction: React.FC<{
                                         }}
                                     />
                                 </Box>
-
-                                {/* Horizontal Divider between DV and NV */}
                                 <Divider sx={{ width: '100%', my: 1 }} />
-
-                                {/* Near Vision (NV) Values */}
+                                {/* Dilated Near Vision (NV) Values */}
                                 <Box sx={{ position: 'relative' }}>
                                     <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                                         NV
                                     </Typography>
-
                                     <Box display='flex' justifyContent='space-around' alignItems='center'>
                                         {renderValueOrDropdown(dilatedSphericalNV, setDilatedSphericalNV, sphericalCylindricalOptions)}
                                         {renderValueOrDropdown(dilatedCylindricalNV, setDilatedCylindricalNV, sphericalCylindricalOptions)}
                                         {renderValueOrDropdown(dilatedAxisNV, setDilatedAxisNV, axisOptions)}
                                     </Box>
-
-                                    {/* Vertical Dividers */}
                                     <Divider
                                         orientation='vertical'
                                         sx={{

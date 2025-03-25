@@ -5,6 +5,7 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { useTheme } from '@mui/material';
 import { useToast } from '@chakra-ui/react';
 import { invoke } from '@tauri-apps/api/core';
+import { useQuery, useQueryClient } from 'react-query';
 
 export type EyeMeasurementData = {
     measurement_id: number;
@@ -27,44 +28,27 @@ const measurements = [
     { label: 'TOND', field: 'tond' },
 ];
 
+const fetchEyeMeasurementData = async (patientId: number, side: string): Promise<EyeMeasurementData> => {
+    return await invoke<EyeMeasurementData>('get_patient_eye_measurement_data', {
+        patientId,
+        side,
+    });
+};
+
 const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
     const theme = useTheme();
     const toast = useToast();
+    const queryClient = useQueryClient();
 
     const [leftEyeMeasurement, setLeftEyeMeasurement] = useState<EyeMeasurementData | null>(null);
     const [rightEyeMeasurement, setRightEyeMeasurement] = useState<EyeMeasurementData | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [updateLoading, setUpdateLoading] = useState<boolean>(false);
     const [editMode, setEditMode] = useState<boolean>(false);
 
-    const fetchEyeMeasurementData = async () => {
-        try {
-            setIsLoading(true);
-            const dataLeft: EyeMeasurementData = await invoke('get_patient_eye_measurement_data', {
-                patientId: patient_id,
-                side: 'LEFT',
-            });
-            const dataRight: EyeMeasurementData = await invoke('get_patient_eye_measurement_data', {
-                patientId: patient_id,
-                side: 'RIGHT',
-            });
-            console.log('dataLeft: ', dataLeft);
-            console.log('dataRight: ', dataRight);
-            setLeftEyeMeasurement(dataLeft);
-            setRightEyeMeasurement(dataRight);
-        } catch (error) {
-            console.error('Error while fetching eye measurement data: ', error);
-            toast({
-                title: `Error while fetching eye measurement data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const leftQuery = useQuery<EyeMeasurementData, Error>(['eye_measurement', patient_id, 'LEFT'], () => fetchEyeMeasurementData(patient_id, 'LEFT'));
+    const rightQuery = useQuery<EyeMeasurementData, Error>(['eye_measurement', patient_id, 'RIGHT'], () => fetchEyeMeasurementData(patient_id, 'RIGHT'));
+
+    const isLoading = leftQuery.isLoading || rightQuery.isLoading;
 
     const handleEyeMeasurementUpdate = async () => {
         try {
@@ -87,6 +71,9 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
                 side: 'RIGHT',
                 updatedBy: 1,
             });
+
+            queryClient.invalidateQueries(['eye_measurement', patient_id, 'LEFT']);
+            queryClient.invalidateQueries(['eye_measurement', patient_id, 'RIGHT']);
         } catch (error) {
             console.error('Error while updating eye measurement data: ', error);
             toast({
@@ -102,8 +89,16 @@ const EyeMeasurement: React.FC<{ patient_id: number }> = ({ patient_id }) => {
     };
 
     useEffect(() => {
-        fetchEyeMeasurementData();
-    }, []);
+        if (leftQuery.data) {
+            setLeftEyeMeasurement(leftQuery.data);
+        }
+    }, [leftQuery.data]);
+
+    useEffect(() => {
+        if (rightQuery.data) {
+            setRightEyeMeasurement(rightQuery.data);
+        }
+    }, [rightQuery.data]);
 
     const handleLeftChange = (field: keyof EyeMeasurementData) => (event: React.ChangeEvent<HTMLInputElement>) => {
         if (leftEyeMeasurement) {

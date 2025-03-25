@@ -10,6 +10,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import ProcedureDetailsModal from './ProcedureDetailsModal';
 import ProcedureListArc from './ProcedureListArc';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { useQuery, useQueryClient } from 'react-query';
 
 interface PatientProcedureGridProps {
     patient_id: number;
@@ -33,11 +34,44 @@ export type Procedure = {
     created_at: string;
 };
 
+// This is the shape of the data returned by the API.
+interface PatientProcedureDataFromAPI {
+    activity_id: number;
+    status: string;
+    procedure_name: string;
+    procedure_description: string;
+    doctors_note: string;
+    patient_complaint: string;
+    comments: string; // newline-separated comments
+    activity_time: string;
+}
+
+// Utility function to sanitize comments
+const sanitizeComments = (comments: string): string[] => {
+    return comments
+        .split('\n')
+        .map((comment) => comment.trim())
+        .filter((comment) => comment !== '');
+};
+
+// Fetch function returns an array of sanitized patient procedures.
+const fetchPatientProcedureData = async (patientId: number): Promise<PatientProcedureData[]> => {
+    const data = await invoke<PatientProcedureDataFromAPI[]>('get_patient_procedures', { patientId });
+    return data.map((proc) => ({
+        ...proc,
+        comments: proc.comments ? sanitizeComments(proc.comments) : [],
+    }));
+};
+
+const fetchAllProcedures = async (): Promise<Procedure[]> => {
+    return await invoke<Procedure[]>('get_all_procedures');
+};
+
 const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id }) => {
     const theme = useTheme();
     const toast = useToast();
+    const queryClient = useQueryClient();
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [patientProcedureData, setPatientProcedureData] = useState<PatientProcedureData[]>([]);
     const [allProcedures, setAllProcedures] = useState<Procedure[]>([]);
     const [hoveredProcedureId, setHoveredProcedureId] = useState<number | null>(null);
@@ -46,62 +80,22 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
     const [showProcedureList, setShowProcedureList] = useState<boolean>(false);
     const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
 
-    const santizeComments = (comments: string) => {
-        let commentsArray = comments.split('\\n');
-        const filteredCommentsArray = commentsArray.filter((comment) => comment.trim() !== '');
-        return filteredCommentsArray;
-    };
+    const proceduresQuery = useQuery<PatientProcedureData[], Error>(['patient_procedures', patient_id], () => fetchPatientProcedureData(patient_id));
+    const allProceduresQuery = useQuery<Procedure[], Error>(['all_procedures'], () => fetchAllProcedures());
 
-    const fetchPatientProcedureData = async () => {
-        try {
-            setIsLoading(true);
-            const data: any[] = await invoke('get_patient_procedures', { patientId: patient_id });
-            console.log('data: ', data);
-            const parsedData = data.map((proc) => ({
-                ...proc,
-                comments: proc.comments ? santizeComments(proc.comments) : [],
-            })) as PatientProcedureData[];
-
-            setNewComment(Array.from({ length: parsedData.length }, () => ''));
-            setCommentLoading(Array.from({ length: parsedData.length }, () => false));
-            setPatientProcedureData(parsedData);
-        } catch (error) {
-            console.error('Error while fetching patient procedure data: ', error);
-            toast({
-                title: `Error while fetching patient procedure data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchAllProcedures = async () => {
-        try {
-            setIsLoading(true);
-            const data: Procedure[] = await invoke('get_all_procedures');
-            setAllProcedures(data);
-        } catch (error) {
-            console.error('Error while fetching procedures data: ', error);
-            toast({
-                title: `Error while fetching procedures data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const isLoading = proceduresQuery.isLoading || allProceduresQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientProcedureData();
-        fetchAllProcedures();
-    }, [patient_id]);
+        if (proceduresQuery.data) {
+            setPatientProcedureData(proceduresQuery.data);
+        }
+    }, [proceduresQuery.data]);
+
+    useEffect(() => {
+        if (allProceduresQuery.data) {
+            setAllProcedures(allProceduresQuery.data);
+        }
+    }, [allProceduresQuery.data]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -141,7 +135,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
             }
 
             await invoke('add_comment_to_procedure', { activityId: patientProcedureData[index].activity_id, comment: comment });
-            await fetchPatientProcedureData();
+            queryClient.invalidateQueries(['patient_procedures', patient_id]);
         } catch (error) {
             console.error('Error while submitting comment: ', error);
             toast({
@@ -404,7 +398,7 @@ const PatientProcedureGrid: React.FC<PatientProcedureGridProps> = ({ patient_id 
                 patient_id={patient_id}
                 onClose={async () => {
                     setSelectedProcedure(null);
-                    await fetchPatientProcedureData();
+                    queryClient.invalidateQueries(['patient_procedures', patient_id]);
                 }}
             />
         </Box>

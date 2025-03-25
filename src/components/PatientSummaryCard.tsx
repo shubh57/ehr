@@ -3,33 +3,29 @@
 import { Box, Typography, useTheme, CircularProgress } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 
 interface PatientSummaryCardProps {
     patient_id: number;
-}
+};
+
+const fetchPatientSummaryData = async (patientId: number): Promise<string[]> => {
+    return await invoke<string[]>('get_patient_summary_data', { patientId });
+};
 
 const PatientSummaryCard: React.FC<PatientSummaryCardProps> = ({ patient_id }) => {
     const theme = useTheme();
 
     const [patientSummary, setPatientSummary] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
 
-    const fetchPatientSummaryData = async () => {
-        try {
-            setIsLoading(true);
-            const data: string[] = await invoke('get_patient_summary_data', { patientId: patient_id });
-            console.log('data: ', data);
-            setPatientSummary(data);
-        } catch (error) {
-            console.error('Error while fetching summary data: ', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const patientSummaryQuery = useQuery<string[], Error>(['patient_summary', patient_id], () => fetchPatientSummaryData(patient_id));
+    const isLoading = patientSummaryQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientSummaryData();
-    }, [patient_id]);
+        if (patientSummaryQuery.data) {
+            setPatientSummary(patientSummaryQuery.data);
+        }
+    }, [patientSummaryQuery.data]);
 
     return (
         <Box

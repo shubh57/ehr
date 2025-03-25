@@ -26,6 +26,7 @@ import { useToast } from '@chakra-ui/react';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import CustomToggleButton from '../../common-components/ToggleButton';
+import { useQuery, useQueryClient } from 'react-query';
 
 export type Alert = {
     alert_id: number;
@@ -38,12 +39,20 @@ export type Alert = {
     issued_by_name: string;
 };
 
+const fetchAlerts = async (token: string): Promise<Alert[]> => {
+    return await invoke<Alert[]>('get_alerts', { token });
+};
+
+const fetchDoctors = async (token: string): Promise<UserInterface[]> => {
+    return await invoke<UserInterface[]>('get_all_doctors', { token });
+};
+
 const Alerts: React.FC = () => {
     const { user, token } = useSelector((state: RootState) => state.auth);
     const toast = useToast();
     const theme = useTheme();
+    const queryClient = useQueryClient();
 
-    const [alertsLoading, setAlertsLoading] = useState<boolean>(false);
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [sentAlerts, setSentAlerts] = useState<Alert[]>([]);
     const [alertSending, setAlertSending] = useState<boolean>(false);
@@ -51,40 +60,27 @@ const Alerts: React.FC = () => {
     const [title, setTitle] = useState<string>('');
     const [message, setMessage] = useState<string>('');
     const [issuedFor, setIssuedFor] = useState<number>();
-    const [doctorLoading, setDoctorLoading] = useState<boolean>(false);
     const [doctors, setDoctors] = useState<UserInterface[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [viewMode, setViewMode] = useState<'received' | 'sent'>('received');
 
-    // Fetch alerts and doctors
+    const alertsQuery = useQuery<Alert[], Error>(['alerts', user?.user_id], () => fetchAlerts(token || ""));
+    const alertsLoading = alertsQuery.isLoading;
+
+    const doctorsQuery = useQuery<UserInterface[], Error>(['all_doctors'], () => fetchDoctors(token || ""));
+    const doctorLoading = doctorsQuery.isLoading;
+
     useEffect(() => {
-        fetchAlerts();
-        fetchDoctors();
-    }, []);
-
-    const fetchAlerts = async () => {
-        try {
-            setAlertsLoading(true);
-            const data: Alert[] = await invoke('get_alerts', { token });
-            setAlerts(data);
-        } catch (error) {
-            console.error('Error while fetching alerts: ', error);
-        } finally {
-            setAlertsLoading(false);
+        if (alertsQuery.data) {
+            setAlerts(alertsQuery.data);
         }
-    };
+    }, [alertsQuery.data]);
 
-    const fetchDoctors = async () => {
-        try {
-            setDoctorLoading(true);
-            const doctorList: UserInterface[] = await invoke('get_all_doctors', { token });
-            setDoctors(doctorList.filter((doctor) => doctor.user_id !== user?.user_id));
-        } catch (error) {
-            console.error('Error while fetching doctor data: ', error);
-        } finally {
-            setDoctorLoading(false);
+    useEffect(() => {
+        if (doctorsQuery.data) {
+            setDoctors(doctorsQuery.data.filter(doctor => doctor.user_id != user?.user_id));
         }
-    };
+    }, [doctorsQuery.data]);
 
     const sendAlert = async () => {
         try {
@@ -134,7 +130,7 @@ const Alerts: React.FC = () => {
             setIsModalOpen(false);
 
             // Refresh alerts
-            fetchAlerts();
+            queryClient.invalidateQueries(['alerts', user?.user_id]);
 
             toast({
                 title: `Alert sent successfully`,
@@ -177,9 +173,7 @@ const Alerts: React.FC = () => {
                             sx={{ fontWeight: alert.priority_level === 'EMERGENCY' ? 'bold' : 'normal' }}
                         />
                     </Box>
-                    <Typography variant='body2'>
-                        {alert.message}
-                    </Typography>
+                    <Typography variant='body2'>{alert.message}</Typography>
                     <Typography variant='caption' color='text.secondary'>
                         {isReceived ? `From: Dr. ${alert.issued_by_name}` : `To: Dr. ${alert.issued_for_name}`}
                     </Typography>
@@ -196,8 +190,8 @@ const Alerts: React.FC = () => {
                         display: 'flex',
                     }}
                 >
-                <Typography variant='h6'>Alerts</Typography>
-                </Box>  
+                    <Typography variant='h6'>Alerts</Typography>
+                </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
                     <Box
                         sx={{
@@ -205,36 +199,36 @@ const Alerts: React.FC = () => {
                             width: '80%',
                         }}
                     >
-                    <CustomToggleButton
-                        selected={viewMode}
-                        onChange={(_, newMode) => newMode && setViewMode(newMode as 'received' | 'sent')}
-                        options={[
-                            { label: 'Received', value: 'received' },
-                            { label: 'Sent', value: 'sent' },
-                        ]}
-                    />
+                        <CustomToggleButton
+                            selected={viewMode}
+                            onChange={(_, newMode) => newMode && setViewMode(newMode as 'received' | 'sent')}
+                            options={[
+                                { label: 'Received', value: 'received' },
+                                { label: 'Sent', value: 'sent' },
+                            ]}
+                        />
                     </Box>
                     <Box
                         sx={{
                             display: 'flex',
-                            width: '20%'
+                            width: '20%',
                         }}
                     >
-                    <IconButton
-                        size='small'
-                        color='primary'
-                        onClick={() => setIsModalOpen(true)}
-                        sx={{
-                            ml: 2,
-                            bgcolor: theme.palette.primary.main,
-                            color: 'white',
-                            '&:hover': { bgcolor: theme.palette.primary.dark },
-                            width: 40,
-                            height: 40,
-                        }}
-                    >
-                        <AddIcon />
-                    </IconButton>
+                        <IconButton
+                            size='small'
+                            color='primary'
+                            onClick={() => setIsModalOpen(true)}
+                            sx={{
+                                ml: 2,
+                                bgcolor: theme.palette.primary.main,
+                                color: 'white',
+                                '&:hover': { bgcolor: theme.palette.primary.dark },
+                                width: 40,
+                                height: 40,
+                            }}
+                        >
+                            <AddIcon />
+                        </IconButton>
                     </Box>
                 </Box>
             </Box>
@@ -243,19 +237,15 @@ const Alerts: React.FC = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                         <CircularProgress />
                     </Box>
-                ) : alerts
-                .filter(alert => viewMode === 'received' ? 
-                    alert.issued_for === user?.user_id : 
-                    alert.issued_by === user?.user_id).length === 0 ? (
+                ) : alerts.filter((alert) => (viewMode === 'received' ? alert.issued_for === user?.user_id : alert.issued_by === user?.user_id)).length ===
+                  0 ? (
                     <Typography sx={{ p: 2, color: 'text.secondary', textAlign: 'center' }}>
                         No alerts {viewMode === 'received' ? 'received' : 'sent'}
                     </Typography>
                 ) : (
                     alerts
-                        .filter(alert => viewMode === 'received' ? 
-                            alert.issued_for === user?.user_id : 
-                            alert.issued_by === user?.user_id)
-                        .map(alert => renderAlertCard(alert, viewMode === 'received'))
+                        .filter((alert) => (viewMode === 'received' ? alert.issued_for === user?.user_id : alert.issued_by === user?.user_id))
+                        .map((alert) => renderAlertCard(alert, viewMode === 'received'))
                 )}
             </Box>
 

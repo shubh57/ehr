@@ -11,9 +11,12 @@ import { ConfirmProvider } from 'material-ui-confirm';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import { attachConsole } from '@tauri-apps/plugin-log';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 attachConsole();
+
+const queryClient = new QueryClient();
 
 root.render(
     <ChakraProvider theme={chakraTheme} resetCSS>
@@ -21,7 +24,9 @@ root.render(
             <Provider store={store}>
                 <ConfirmProvider>
                     <BrowserRouter>
-                        <App />
+                        <QueryClientProvider client={queryClient}>
+                            <App />
+                        </QueryClientProvider>
                     </BrowserRouter>
                 </ConfirmProvider>
             </Provider>

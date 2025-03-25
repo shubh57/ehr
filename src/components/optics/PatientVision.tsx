@@ -4,6 +4,8 @@ import { Box, CircularProgress, Paper, Typography, IconButton, TextField, useThe
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
 import { Lock, LockOpen } from '@mui/icons-material';
+import ShimmerPatientVision from './ShimmerPatientVision';
+import { useQuery, useQueryClient } from 'react-query';
 
 export type VisionData = {
     vision_id: number;
@@ -46,41 +48,27 @@ const visionOptions = [
     'No PL',
 ];
 
+const fetchVisionData = async (patient_id: number, side: string, value_type: string): Promise<VisionData> => {
+    return await invoke<VisionData>('get_vision_data', { query: { patient_id: patient_id, side: side, value_type: value_type } });
+};
+
 const PatientVision: React.FC<{
     patient_id: number;
-    side: String;
-    value_type: String;
+    side: string;
+    value_type: string;
 }> = ({ patient_id, side, value_type }) => {
     const toast = useToast();
     const theme = useTheme();
+    const queryClient = useQueryClient();
 
     const [visionData, setVisionData] = useState<VisionData>();
     const [nearVision, setNearVision] = useState<String>('');
     const [distantVision, setDistantVision] = useState<String>('');
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLocked, setIsLocked] = useState<boolean>(true);
     const [updateLoading, setUpdateLoading] = useState<boolean>(false);
 
-    const fetchVisionData = async () => {
-        try {
-            setIsLoading(true);
-            const data: VisionData = await invoke('get_vision_data', { query: { patient_id: patient_id, side: side, value_type: value_type } });
-            setNearVision(data.near_vision);
-            setDistantVision(data.distant_vision);
-            setVisionData(data);
-        } catch (error) {
-            console.error('Error while fetching vision data: ', error);
-            toast({
-                title: `Error while fetching vision data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const visionQuery = useQuery<VisionData, Error>(['vision', patient_id, side, value_type], () => fetchVisionData(patient_id, side, value_type));
+    const isLoading = visionQuery.isLoading;
 
     const handleVisionUpdate = async () => {
         try {
@@ -93,6 +81,8 @@ const PatientVision: React.FC<{
                 valueType: value_type,
                 updatedBy: 1,
             });
+
+            queryClient.invalidateQueries(['vision', patient_id, side, value_type]);
         } catch (error) {
             console.error('Error while updating vision data: ', error);
             toast({
@@ -115,13 +105,18 @@ const PatientVision: React.FC<{
     };
 
     useEffect(() => {
-        fetchVisionData();
-    }, []);
+        if (visionQuery.data) {
+            console.log('visionQuery.data: ', visionQuery.data);
+            setVisionData(visionQuery.data);
+            setNearVision(visionQuery.data.near_vision);
+            setDistantVision(visionQuery.data.distant_vision);
+        }
+    }, [visionQuery.data]);
 
     return (
         <Box display='flex' alignItems='center' justifyContent='center' height='100%' width='9rem'>
             {isLoading ? (
-                <CircularProgress size={24} />
+                <ShimmerPatientVision />
             ) : (
                 <Card
                     sx={{

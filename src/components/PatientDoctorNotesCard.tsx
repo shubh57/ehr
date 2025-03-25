@@ -4,6 +4,7 @@ import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
 import { LockOpen, Lock } from '@mui/icons-material';
+import { useQuery } from 'react-query';
 
 interface PatientDoctorNotesCardProps {
     patient_id: number;
@@ -15,29 +16,26 @@ export type PatientDoctorData = {
     activity_time: string;
 };
 
+const fetchPatientDoctorData = async (
+    patientId: number
+): Promise<PatientDoctorData[]> => {
+    return await invoke<PatientDoctorData[]>('get_patient_doctor_data', { patientId });
+};
+
 const PatientDoctorNotesCard: React.FC<PatientDoctorNotesCardProps> = ({ patient_id }) => {
     const theme = useTheme();
 
-    const [isLoading, setIsLoading] = useState(false);
     const [patientDoctorData, setPatientDoctorData] = useState<PatientDoctorData[]>([]);
     const [showNotes, setShowNotes] = useState(false);
 
-    const fetchPatientDoctorData = async () => {
-        try {
-            setIsLoading(true);
-            const data: PatientDoctorData[] = await invoke('get_patient_doctor_data', { patientId: patient_id });
-            console.log('data: ', data);
-            setPatientDoctorData(data);
-        } catch (error) {
-            console.error('Error while fetching data: ', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const patientDoctorQuery = useQuery<PatientDoctorData[], Error>(['patient_doctor_data', patient_id], () => fetchPatientDoctorData(patient_id));
+    const isLoading = patientDoctorQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientDoctorData();
-    }, [patient_id]);
+        if (patientDoctorQuery.data) {
+            setPatientDoctorData(patientDoctorQuery.data);
+        }
+    }, [patientDoctorQuery.data]);
 
     return (
         <Box

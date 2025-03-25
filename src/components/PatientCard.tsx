@@ -5,28 +5,25 @@ import { Patient } from '../pages/ConsultantPage';
 import { Box, Typography, Avatar, useTheme, CircularProgress, Button } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'react-query';
 
 interface PatientCardProps {
     patient_id: number;
 }
 
+const fetchPatientData = async (
+    patientId: number
+): Promise<Patient> => {
+    return await invoke<Patient>('get_patient_data', { patientId });
+};
+
 const PatientCard: React.FC<PatientCardProps> = ({ patient_id }) => {
     const theme = useTheme();
     const navigate = useNavigate();
     const [patientData, setPatientData] = useState<Patient>();
-    const [isLoading, setIsLoading] = useState(false);
 
-    const fetchPatientData = async (patient_id: number) => {
-        try {
-            setIsLoading(true);
-            const data: Patient = await invoke('get_patient_data', { patientId: patient_id });
-            setPatientData(data);
-        } catch (error) {
-            console.error('Error fetching patient data:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const patientQuery = useQuery<Patient, Error>(['patient_data', patient_id], () => fetchPatientData(patient_id));
+    const isLoading = patientQuery.isLoading;
 
     const calculateAge = (dob: string) => {
         const birthDate = new Date(dob);
@@ -40,8 +37,10 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient_id }) => {
     };
 
     useEffect(() => {
-        fetchPatientData(patient_id);
-    }, [patient_id]);
+        if (patientQuery.data) {
+            setPatientData(patientQuery.data);
+        }
+    }, [patientQuery.data]);
 
     return (
         <Box

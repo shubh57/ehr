@@ -18,8 +18,9 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Skeleton,
 } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense, lazy } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Patient } from './ConsultantPage';
 import { useToast } from '@chakra-ui/react';
@@ -32,6 +33,14 @@ import EyeMeasurement from '../components/optics/EyeMeasurement';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import PrescriptionDocument from '../components/optics/PrescriptionDocument';
 import { documentDir, downloadDir } from '@tauri-apps/api/path';
+import ShimmerPatientRefraction from '../components/optics/ShimmerPatientRefraction';
+import { UserInterface } from '../redux/auth/interfaces';
+import { useQuery } from 'react-query';
+const LazyPatientRefraction = lazy(() => import('../components/optics/PatientRefraction'));
+
+const fetchPatientData = async (patientId: number): Promise<Patient> => {
+    return await invoke<Patient>('get_patient_data', { patientId });
+};
 
 const PatientOptics: React.FC = () => {
     const { patient_id } = useParams();
@@ -42,8 +51,10 @@ const PatientOptics: React.FC = () => {
     const swipeHandled = useRef(false);
 
     const [patientData, setPatientData] = useState<Patient>();
-    const [patientDataLoading, setPatientDataLoading] = useState<boolean>(false);
     const [prescriptionDialogOpen, setPrescriptionDialogOpen] = useState<boolean>(false);
+
+    const patientQuery = useQuery<Patient, Error>(['patient_data', patientId], () => fetchPatientData(patientId));
+    const patientDataLoading = patientQuery.isLoading;
 
     useEffect(() => {
         const handleWheel = (e: any) => {
@@ -88,25 +99,6 @@ const PatientOptics: React.FC = () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, []);
-
-    const fetchPatientData = async () => {
-        try {
-            setPatientDataLoading(true);
-            const data: Patient = await invoke('get_patient_data', { patientId: patientId });
-            setPatientData(data);
-        } catch (error) {
-            console.error('Error while fetching patient data: ', error);
-            toast({
-                title: `Error while fetching patient data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setPatientDataLoading(false);
-        }
-    };
 
     const calculateAge = (dob: string) => {
         const birthDate = new Date(dob);
@@ -166,16 +158,20 @@ const PatientOptics: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchPatientData();
-    }, []);
+        if (patientQuery.data) {
+            setPatientData(patientQuery.data);
+        }
+    }, [patientQuery.data]);
 
     return (
         <Box
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '100vh',
+                minHeight: '90vh',
+                maxHeight: '90vh',
                 padding: '12px',
+                marginTop: 0,
                 backgroundColor: theme.palette.background.default,
                 width: '100%',
             }}
@@ -198,7 +194,21 @@ const PatientOptics: React.FC = () => {
                 >
                     <ArrowBack onClick={() => navigate(`/patient_details/${patientId}`)} style={{ cursor: 'pointer' }} />
                     {patientDataLoading ? (
-                        <CircularProgress />
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                padding: '10px 20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                            }}
+                        >
+                            <Skeleton variant='circular' width={50} height={50} />
+                            <Box>
+                                <Skeleton variant='text' width={150} height={20} />
+                                <Skeleton variant='text' width={80} height={16} />
+                            </Box>
+                        </Paper>
                     ) : (
                         <Paper
                             elevation={3}
@@ -255,7 +265,7 @@ const PatientOptics: React.FC = () => {
                         gap: '0.5rem',
                     }}
                 >
-                    {patientData && (
+                    {patientData ? (
                         <Paper
                             elevation={3}
                             sx={{
@@ -266,6 +276,18 @@ const PatientOptics: React.FC = () => {
                             }}
                         >
                             <Typography variant='h6'>MR Number: {patientData?.mr_number}</Typography>
+                        </Paper>
+                    ) : (
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                padding: '10px 20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                            }}
+                        >
+                            <Skeleton variant='text' width={150} height={20} />
                         </Paper>
                     )}
                     <Button
@@ -318,7 +340,9 @@ const PatientOptics: React.FC = () => {
                         maxWidth: '18%',
                     }}
                 >
-                    <PatientRefraction patient_id={patientId} side='RIGHT' />
+                    <Suspense fallback={<ShimmerPatientRefraction />}>
+                        <LazyPatientRefraction patient_id={patientId} side='RIGHT' />
+                    </Suspense>
                 </Box>
                 <Box
                     sx={{
@@ -354,7 +378,9 @@ const PatientOptics: React.FC = () => {
                         maxWidth: '18%',
                     }}
                 >
-                    <PatientRefraction patient_id={patientId} side='LEFT' />
+                    <Suspense fallback={<ShimmerPatientRefraction />}>
+                        <LazyPatientRefraction patient_id={patientId} side='LEFT' />
+                    </Suspense>
                 </Box>
                 <Box
                     sx={{
@@ -392,7 +418,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter findings here...'
                                 variant='outlined'
                                 fullWidth
@@ -420,7 +446,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter diagnosis here...'
                                 variant='outlined'
                                 fullWidth
@@ -448,7 +474,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter advice here...'
                                 variant='outlined'
                                 fullWidth
@@ -485,7 +511,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter findings here...'
                                 variant='outlined'
                                 fullWidth
@@ -513,7 +539,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter diagnosis here...'
                                 variant='outlined'
                                 fullWidth
@@ -541,7 +567,7 @@ const PatientOptics: React.FC = () => {
 
                             <TextField
                                 multiline
-                                rows={3}
+                                rows={2}
                                 placeholder='Enter advice here...'
                                 variant='outlined'
                                 fullWidth

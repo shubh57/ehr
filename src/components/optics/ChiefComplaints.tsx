@@ -5,36 +5,26 @@ import { useToast } from '@chakra-ui/react';
 import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
+
+const fetchPatientComplaints = async (patientId: number): Promise<string[]> => {
+    return await invoke<string[]>('get_patient_complaints', { patientId });
+};
 
 const ChiefComplaints: React.FC<{ patient_id: number }> = ({ patient_id }) => {
     const theme = useTheme();
     const toast = useToast();
 
     const [patientComplaints, setPatientComplaints] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const fetchPatientComplaints = async () => {
-        try {
-            setIsLoading(true);
-            const data: string[] = await invoke('get_patient_complaints', { patientId: patient_id });
-            setPatientComplaints(data);
-        } catch (error) {
-            console.error('Error while fetching patient complaints: ', error);
-            toast({
-                title: `Error while fetching patient complaints data: ${error}`,
-                status: 'error',
-                duration: 4000,
-                isClosable: true,
-                position: 'top',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const complaintsQuery = useQuery<string[], Error>(['complaints', patient_id], () => fetchPatientComplaints(patient_id));
+    const isLoading = complaintsQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientComplaints();
-    }, []);
+        if (complaintsQuery.data) {
+            setPatientComplaints(complaintsQuery.data);
+        }
+    }, [complaintsQuery.data]);
 
     return (
         <Box

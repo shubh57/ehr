@@ -3,6 +3,7 @@
 import { Box, Typography, useTheme, CircularProgress } from '@mui/material';
 import { invoke } from '@tauri-apps/api/core';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 
 interface PatientHistoryCardProps {
     patient_id: number;
@@ -54,34 +55,33 @@ const renderBubbles = (items: string[] | undefined, emptyMessage: string) => {
     ));
 };
 
+const fetchPatientHistoryData = async (
+    patientId: number
+): Promise<PatientHistoryData> => {
+    const data: any = await invoke('get_patient_history_data', { patientId });
+
+    const formattedData: PatientHistoryData = {
+        last_visit: data.last_visit,
+        medical_conditions: JSON.parse(data.medical_conditions),
+        medications: JSON.parse(data.medications),
+        allergies: JSON.parse(data.allergies),
+    };
+    return formattedData;
+};
+
 const PatientHistoryCard: React.FC<PatientHistoryCardProps> = ({ patient_id }) => {
     const theme = useTheme();
 
     const [patientHistoryData, setPatientHistoryData] = useState<PatientHistoryData>();
-    const [isLoading, setIsLoading] = useState(false);
 
-    const fetchPatientHistoryData = async () => {
-        try {
-            setIsLoading(true);
-            const data: any = await invoke('get_patient_history_data', { patientId: patient_id });
-
-            const formattedData: PatientHistoryData = {
-                last_visit: data.last_visit,
-                medical_conditions: JSON.parse(data.medical_conditions),
-                medications: JSON.parse(data.medications),
-                allergies: JSON.parse(data.allergies),
-            };
-            setPatientHistoryData(formattedData);
-        } catch (error) {
-            console.error('Error while fetching patient history data: ', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const patientHistoryQuery = useQuery<PatientHistoryData, Error>(['patient_history_data', patient_id], () => fetchPatientHistoryData(patient_id));
+    const isLoading = patientHistoryQuery.isLoading;
 
     useEffect(() => {
-        fetchPatientHistoryData();
-    }, [patient_id]);
+        if (patientHistoryQuery.data) {
+            setPatientHistoryData(patientHistoryQuery.data);
+        }
+    }, [patientHistoryQuery.data]);
 
     return (
         <Box
